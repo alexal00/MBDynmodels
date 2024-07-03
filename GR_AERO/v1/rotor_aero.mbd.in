@@ -79,7 +79,7 @@ set: ifndef const real INPUT_B_1_H = 5.70475*deg2rad; # radian
 # 0 : Standard mechanism
 # 1 : Interblade mechanism
 # 2 : i2b mechanism
-DAMP = 0.;
+DAMP = 1.;
 print("set: ifndef const real DAMP = ", DAMP, ";",sep='');
 
 if DAMP==0:

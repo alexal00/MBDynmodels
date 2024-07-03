@@ -1,0 +1,81 @@
+# $Header: /var/cvs/mbdyn/mbdyn/mbdyn-1.0/tests/joints/rod/rodwithoffset-symbolic,v 1.2 2014/12/13 17:15:52 masarati Exp $
+
+begin: data;
+	problem: initial value;
+end: data;
+
+begin: initial value;
+	initial time: 0.;
+	final time: 10.;
+	time step: 1.e-3;
+
+	tolerance: 1e-4;
+	max iterations: 10;
+
+	method: ms, .6;
+
+	#output: iterations;
+	#output: residual;
+end: initial value;
+
+begin: control data;
+	structural nodes: 2;
+	rigid bodies: 1;
+	joints: 1 + 2;
+	forces: 1;
+
+	max iterations: 20;
+	tolerance: 1e-9;
+end: control data;
+
+begin: nodes;
+	structural: 0, static,
+		null,
+		eye,
+		null,
+		null,
+		output, no;
+	structural: 1, dynamic,
+		null,
+		eye,
+		null,
+		null;
+end: nodes;
+
+begin: elements;
+	joint: 0, clamp, 0, node, node;
+
+	joint: 1, revolute hinge,
+		0,
+			position, reference, node, null,
+			orientation, reference, node, eye,
+		1,
+			position, reference, node, null,
+			orientation, reference, node, eye;
+
+	set: const real OMEGA = 10.*2*pi;
+	set: const real XI = 0.1;
+	set: const real J = 1.;
+	constitutive law: 10, 1, linear viscoelastic generic, J*OMEGA^2, XI*2*J*OMEGA;
+	constitutive law: 20, 1, 
+		symbolic viscoelastic,
+			epsilon, "Eps",
+			epsilon prime, "EpsP",
+		 	expression, "3947.8*Eps + 100*tanh(10*EpsP)";
+			# note: 1.*(10.*2*pi)^2 ~= 3947.8
+
+	joint: 2, deformable axial joint,
+		0,
+			position, reference, node, null,
+			orientation, reference, node, eye,
+		1,
+			position, reference, node, null,
+			orientation, reference, node, eye,
+		# reference, 10;
+		reference, 20;
+
+	body: 1, 1, 1., null, diag, 1., 1., J;
+	couple: 1, follower, 1, 0., 0., 1., sine, 0., 2.*pi, 1000., forever, 0.;
+end: elements;
+
+# vim:ft=mbd

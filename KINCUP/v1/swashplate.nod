@@ -1,0 +1,11 @@
+structural: SWASHPLATE_FIXED, static,
+		reference, SWASHPLATE_FIXED, null,
+		reference, SWASHPLATE_FIXED, eye,
+		reference, SWASHPLATE_FIXED, null,
+		reference, SWASHPLATE_FIXED, null;
+
+	structural: SWASHPLATE_ROTATING, static,
+		reference, SWASHPLATE_ROTATING, null,
+		reference, SWASHPLATE_ROTATING, eye,
+		reference, SWASHPLATE_ROTATING, null,
+		reference, SWASHPLATE_ROTATING, null;

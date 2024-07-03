@@ -1,0 +1,19 @@
+# because of the arrangement of the pitch horn, the blade "sees" the swashplate ahead by PSI_SW instead of 90 deg,
+# so the reference system is rotated backward by the required amount
+set: const real sin_PSI_SW = Y_PITCH_HORN/sqrt(Y_PITCH_HORN^2 + X_BLADE_FLAP_OFFSET^2);
+set: const real cos_PSI_SW = X_BLADE_FLAP_OFFSET/sqrt(Y_PITCH_HORN^2 + X_BLADE_FLAP_OFFSET^2);
+
+reference: SWASHPLATE_FIXED,
+	reference, HUB, 0., 0., Z_SWASHPLATE,
+	reference, AIRFRAME_Y,
+		# eye,
+		3, 0., 0., 1.,
+		1, sin_PSI_SW, -cos_PSI_SW, 0.,
+	reference, AIRFRAME_Y, null,
+	reference, AIRFRAME_Y, null;
+
+reference: SWASHPLATE_ROTATING,
+	reference, SWASHPLATE_FIXED, null,
+	reference, SWASHPLATE_FIXED, eye,
+	reference, HUB, null,
+	reference, HUB, null;

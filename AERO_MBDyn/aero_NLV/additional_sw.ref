@@ -1,0 +1,13 @@
+reference: CURR_BLADE + PITCH_LINK_TOP,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, X_PITCH_HORN, Y_PITCH_HORN, 0., # also Z may be non zero!
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, eye,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null;
+
+reference: CURR_BLADE + PITCH_LINK_BOTTOM,
+	reference, CURR_BLADE + PITCH_LINK_TOP, 0., 0., Z_SWASHPLATE, # be consistent!
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, eye,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null;
+
+# vim:ft=mbd

@@ -1,0 +1,85 @@
+# ------ GR MODEL: blade reference systems ------
+# ------------ NOVEL BLADE MODEL ---------------
+#	X_BLADE_FLAP_OFFSET
+#  <------------>
+#
+#	c_bar	c
+#  <-----|------>
+#  	   d
+#	  <-->
+#				o							^
+#	   o		|	___________________		|	a
+#		\		|	|					\	|
+#  o-----o======o---|					|	-
+#		/		|	|					|	|
+#	   o		|	--------------------	|	b
+#				0							v
+#	  <-->
+#	   f
+#
+
+# Reference position for point A ( connection with blade i+1)
+reference: CURR_BLADE + A_NOD,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, C_BARA, A_BAR, 0.,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, eye,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null; 
+
+# Reference position for point B ( connection with blade i+1)
+reference: CURR_BLADE + B_NOD,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, C_BARB, -B_BAR, 0.,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, eye,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null;
+
+# Reference position for rod connecting nodes Ai and Fi+1
+reference: CURR_BLADE + AF_ROD,
+	reference, CURR_BLADE + A_NOD, X_AF/2, Y_AF/2, Z_AF/2,
+	reference, CURR_BLADE, eye,
+	reference, CURR_BLADE, null,
+	reference, CURR_BLADE, null;
+
+# Reference position for rod connecting nodes Bi and Di-1
+reference: CURR_BLADE + BD_ROD,
+	reference, CURR_BLADE + B_NOD, X_BD/2, Y_BD/2, Z_BD/2,
+	reference, CURR_BLADE, eye,
+	reference, CURR_BLADE, null,
+	reference, CURR_BLADE, null;
+
+# Cylindrical damper position
+reference: CURR_BLADE + C_NOD,
+	reference, CURR_BLADE , X_BLADE_FLAP_OFFSET-C_BAR, 0., 0.,
+	reference, CURR_BLADE , 
+		1, -1., 0., 0.,
+		3, 0., 0., -1.,
+	reference, CURR_BLADE , null,
+	reference, CURR_BLADE , null;
+
+# Arm 1 of cylindrical damper CM
+reference: CURR_BLADE + D_NOD,
+	reference, CURR_BLADE + C_NOD, D_BAR/2,0.,0.,
+	reference, CURR_BLADE + C_NOD, eye,
+	reference, CURR_BLADE + C_NOD, null,
+	reference, CURR_BLADE + C_NOD, null;
+
+# Arm 2 of cylindrical damper CM
+reference: CURR_BLADE + F_NOD,
+	reference, CURR_BLADE + C_NOD, F_BAR/2,0.,0.,
+	reference, CURR_BLADE + C_NOD, eye,
+	reference, CURR_BLADE + C_NOD, null,
+	reference, CURR_BLADE + C_NOD, null;
+
+# Extreme of Arm 1 of cylindrical damper 
+reference: CURR_BLADE + D_NOD+1,
+	reference, CURR_BLADE + D_NOD, D_BAR/2,0.,0.,
+	reference, CURR_BLADE + D_NOD, eye,
+	reference, CURR_BLADE + D_NOD, null,
+	reference, CURR_BLADE + D_NOD, null;
+
+# Extreme of Arm 2 of cylindrical damper
+reference: CURR_BLADE + F_NOD+1,
+	reference, CURR_BLADE + F_NOD, F_BAR/2,0.,0.,
+	reference, CURR_BLADE + F_NOD, eye,
+	reference, CURR_BLADE + F_NOD, null,
+	reference, CURR_BLADE + F_NOD, null;
+# vim:ft=mbd

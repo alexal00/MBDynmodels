@@ -1,0 +1,34 @@
+# ------ GR MODEL: blade reference systems ------
+# ------------ NOVEL BLADE MODEL ---------------
+#	X_BLADE_FLAP_OFFSET
+#  <------------>
+#
+#	c_bar	c
+#  <-----|------>
+#  	  		  \
+#	  		   \
+#				o A							^
+#	    		|	___________________		|	a
+#			   C|	|					\	|
+#  o------------o---|					|	-
+#		 		|	|					|	|
+#	    		|	--------------------	|	b
+#				o B							v
+#	 
+#	   
+#
+# Reference position for point A ( connection with blade i+1)
+reference: CURR_BLADE + A_NOD,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, C_BARA, A_BAR, 0.,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, eye,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null; 
+
+# Reference position for point B ( connection with blade i+1)
+reference: CURR_BLADE + B_NOD,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, C_BARB, -B_BAR, 0.,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, eye,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null,
+	reference, CURR_BLADE + BLADE_FLAP_OFFSET, null; 
+
+# vim:ft=mbd

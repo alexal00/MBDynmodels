@@ -1,0 +1,126 @@
+# $Header: /var/cvs/mbdyn/mbdyn/mbdyn-1.0/tests/joints/rod/rodwithoffset-symbolic,v 1.2 2014/12/13 17:15:52 masarati Exp $
+
+begin: data;
+	problem: initial value;
+end: data;
+# Begin numbering segment
+set: const integer GROUND = 0;				# Ground node
+set: const integer A = 100;					# Moving body node
+set: const integer HINGE = 1;				# Axial joint
+set: const integer DEF_HINGE = HINGE+30;	# Defformable axial joint
+# Constitutive laws
+set: const integer CL_VE = 30;				# Linear viscoelastic
+set: const integer CL_FRICC = 40;			# Linear elastic, non-linear viscoelastic
+set: ifndef const integer CL = 40;			# Selected constitutive law
+# Forcing terms
+set: const integer HARM_FORCE = 1000;		# Harmonic moment
+# Parameter definitions
+# Structural properties
+set: ifndef const real OMEGA = 10.*2*pi;	# Natural frequency
+set: ifndef const real XI = 0.1;			# Damping ratio
+set: ifndef const real J = 1.;				# Inertia moment around z axis
+set: ifndef const real K_XI = OMEGA^2;		# Linear stiffness term
+set: ifndef const real ALPHA = 10.;			# Angular velocity multiplier
+set: ifndef const real f = 100.;			# Angular velocity multiplier
+
+# Exiciting force
+set: ifndef const real OMEGA_F = 2*pi;		# Forcing frequency 
+set: ifndef const real M_Z = 1650.;			# Forcing amplitude
+
+set: ifndef const real NPER = 100;			# Number of periods to run simulation
+set: const real T_REV = 2*pi/OMEGA;			# Oscilation period
+set: const real T_END = NPER*T_REV;	# Final time
+set: const integer N_STEPS_PER_REV = 256;
+set: const real dt = T_REV/N_STEPS_PER_REV;
+begin: initial value;
+	initial time: 0.;
+	final time: T_END;
+	time step: dt;
+
+	tolerance: 1e-4;
+	max iterations: 10;
+
+	method: ms, .6;
+
+	#output: iterations;
+	#output: residual;
+end: initial value;
+
+begin: control data;
+	structural nodes: 2;
+	rigid bodies: 1;
+	joints: 1 + 2;
+	forces: 1;
+
+	max iterations: 20;
+	tolerance: 1e-9;
+
+	#output meter: string, "Time >= 15.";
+	default output: reference frames; 
+	output results: netcdf, no text; 
+end: control data;
+
+
+# Scalar functions
+#scalar function: "alpha",const,ALPHA;
+scalar function: "f",const,f;
+scalar function: "exp_p",exp, coefficient, ALPHA,1.; # e**(alpha*x)
+scalar function: "exp_m",exp, coefficient, -1*ALPHA,1.; # e**(-alpha*x)
+
+scalar function: "num",sub,"exp_p","exp_m";# e**x-e**-x
+scalar function: "den",sum,"exp_p","exp_m";# e**x+e**-x
+
+scalar function: "tanh",div,"num","den";# tanh= (e**x-e**-x) / (e**x+e**-x)
+scalar function: "nlvisc",mul,"f","tanh";
+
+# Constitutive laws
+
+constitutive law: CL_VE, 1, linear viscoelastic generic, J*OMEGA^2, XI*2*J*OMEGA;
+
+constitutive law: CL_FRICC,1,nlsf viscoelastic,
+  K_XI,	# Linear Stiffness
+  	null,	# Non-linear stiffness
+  0.,		# Linear damping
+  "nlvisc";	# Hiperbolic tangent non-linear damping
+
+begin: nodes;
+	structural: GROUND, static,
+		null,
+		eye,
+		null,
+		null,
+		output, no;
+	structural: A, dynamic,
+		null,
+		eye,
+		null,
+		null;
+end: nodes;
+
+begin: elements;
+	joint: GROUND, clamp, GROUND, node, node;
+
+	joint: HINGE, revolute hinge,
+		GROUND,
+			position, reference, node, null,
+			orientation, reference, node, eye,
+		A,
+			position, reference, node, null,
+			orientation, reference, node, eye;
+
+
+	joint: DEF_HINGE, deformable axial joint,
+		GROUND,
+			position, reference, node, null,
+			orientation, reference, node, eye,
+		A,
+			position, reference, node, null,
+			orientation, reference, node, eye,
+		# reference, 10;
+		reference, CL;
+
+	body: A, A, 1., null, diag, 1., 1., J;
+	couple: HARM_FORCE, absolute, A, 0., 0., 1., sine, 0., OMEGA_F, M_Z, forever, 0.;
+end: elements;
+
+# vim:ft=mbd

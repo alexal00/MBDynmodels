@@ -1,0 +1,44 @@
+# Pitch link
+/*
+        (radial) offset of pitch link: X_PITCH_HORN
+       |---|
+           o               -
+          /                | (chordwise) offset of pitch link: Y_PITCH_HORN
+         /                 |
+  +-----o-------------     -
+  
+ */
+
+/*             Y_PITCH_HORN
+             o--------+
+             ^ 
+             | z swashplate
+ */
+# * position
+set: ifndef const real X_PITCH_HORN = 0.; # m; define; <> 0 implies delta_3 (pitch-flap coupling); delta_3 = atan2(X_PITCH_HORN, Y_PITCH_HORN); X_PITCH_HORN = Y_PITCH_HORN*tan(delta_3)
+set: ifndef const real Y_PITCH_HORN = 0.2; # m; define
+
+# gear ratios for pitch control system
+set: const real COLLECTIVE_GEAR_RATIO = Y_PITCH_HORN;
+set: const real CYCLIC_GEAR_RATIO = Y_PITCH_HORN/sqrt(X_BLADE_FLAP_OFFSET^2 + Y_PITCH_HORN^2);
+
+set: const integer D_PITCH_INPUT_COLLECTIVE = 75;
+set: const integer D_PITCH_INPUT_CYCLIC_LATERAL = 76;
+set: const integer D_PITCH_INPUT_CYCLIC_LONGITUDINAL = 77;
+set: real PITCH_T1 = 2*T_REV; # s, ramp-up time of pitch controls
+
+### NOTE: angles in radian
+drive caller: D_PITCH_INPUT_COLLECTIVE,
+	# const, 0.;
+	#cosine, 0., pi/PITCH_T1, INPUT_THETA_0/2, half, 0.;
+    step5, 0.,0., PITCH_T1, INPUT_THETA_0;
+
+### NOTE: positive cyclics with "-" because theta = theta_0 - A_1 *cos(psi) - B_1 * sin(psi)
+drive caller: D_PITCH_INPUT_CYCLIC_LATERAL,
+	#const, 0.;
+	# cosine, 0., pi/PITCH_T1, -INPUT_A_1_H/2, half, 0.;
+    step5, 0.,0., PITCH_T1, -INPUT_A_1_H;
+drive caller: D_PITCH_INPUT_CYCLIC_LONGITUDINAL,
+	# const, 0.;
+	#cosine, 0., pi/PITCH_T1, -INPUT_B_1_H/2, half, 0.;
+    step5, 0.,0., PITCH_T1, -INPUT_B_1_H;

@@ -1,0 +1,4 @@
+# Ignore the OLD_VERSIONS folder
+OLD_VERSIONS/
+# Bash script to identify large objects
+script.sh

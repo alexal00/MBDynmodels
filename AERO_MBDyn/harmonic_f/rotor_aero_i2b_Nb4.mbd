@@ -1,0 +1,827 @@
+begin: data; 
+        problem: initial value; 
+end: data; 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:5
+
+#python 1 # from __future__ import print_function, division 
+#python 2 # from MBDynLib import * 
+#python 3 # import numpy as np 
+#python 4 # #nodes = [] 
+#python 5 # #bodies = [] 
+#python 6 # #joints = [] 
+#python 7 # #shells = [] 
+#python 8 # #beams = [] 
+#python 9 #  
+#python 10 # ### DATA START HERE 
+#python 11 #  
+#python 12 # # define here the desired number of blades (>= 4) 
+#python 13 # print("### TO CHANGE `N_B', THE NUMBER OF BLADES, GO BACK TO `rotor_aero.mbd.in', CHANGE `N_B THERE', AND RUN\n###\n###    python MBDynPreprocess.py rotor_aero.mbd.in > rotor_aero.mbd\n###"); 
+#python 14 # N_B = 4; 
+#python 15 # Delta_psi = 2*np.pi/N_B 
+#python 16 # ConstMBVar('N_B', 'integer', N_B) 
+#python 17 # print('set: const real DELTAPSI=2*pi/N_B;',sep=''); 
+#python 18 # #ConstMBVar('DELTAPSI','real', Delta_psi) 
+#python #endpreprocess at rotor_aero.mbd.in:24
+
+### TO CHANGE `N_B', THE NUMBER OF BLADES, GO BACK TO `rotor_aero.mbd.in', CHANGE `N_B THERE', AND RUN
+###
+###    python MBDynPreprocess.py rotor_aero.mbd.in > rotor_aero.mbd
+###
+set: const integer N_B = 4;
+set: const real DELTAPSI=2*pi/N_B;
+ 
+# basic main rotor data 
+set: ifndef const real OMEGA_100 = 40.; # rad/s should be ok 
+set: const real R = 5.5; # m; check 
+set: real OMEGA_0 = OMEGA_100; 
+ 
+# harmonic excitation rotor 
+set: ifndef const integer HARMONIC = 7; 
+# blade 
+set: const real SIGMA = 0.08; 
+ 
+# operating conditions 
+# set: ifndef const real V_INF = 0*65.; # m/s 
+# set: ifndef const real ALTITUDE = 0.; # m, for standard air 
+# set: ifndef const real ALPHA_H = 0.*deg2rad; # radian 
+ 
+# controls 
+# set: ifndef const real INPUT_THETA_0 = 8.*deg2rad; # radian 
+# set: ifndef const real INPUT_A_1_H = 0.*deg2rad; # radian 
+# set: ifndef const real INPUT_B_1_H = 5.*deg2rad; # radian 
+ 
+/* 
+### v = 0 m/s 
+set: ifndef const real V_INF = 0.; # m/s 
+set: ifndef const real ALTITUDE = 0.; # m, for standard air 
+set: ifndef const real ALPHA_H = 0.*deg2rad; # radian 
+set: ifndef const real INPUT_THETA_0 = 7.6678*deg2rad; # radian 
+set: ifndef const real INPUT_A_1_H = 0.*deg2rad; # radian 
+set: ifndef const real INPUT_B_1_H = 0.*deg2rad; # radian 
+*/ 
+ 
+ 
+### v = 50 m/s 
+set: ifndef const real V_INF = 50.; # m/s 
+set: ifndef const real ALTITUDE = 0.; # m, for standard air 
+set: ifndef const real ALPHA_H = 2.41172*deg2rad; # radian 
+set: ifndef const real INPUT_THETA_0 = 6.54609*deg2rad; # radian 
+set: ifndef const real INPUT_A_1_H = 0.*deg2rad; # radian 
+set: ifndef const real INPUT_B_1_H = 5.70475*deg2rad; # radian 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:65
+
+#python 1 # ## Damping mechanism 
+#python 2 # # 0 : Standard mechanism 
+#python 3 # # 1 : Interblade mechanism 
+#python 4 # # 2 : i2b mechanism 
+#python 5 # DAMP = 2.; 
+#python 6 # print("set: ifndef const real DAMP = ", DAMP, ";",sep=''); 
+#python 7 #  
+#python 8 # if DAMP==0: 
+#python 9 # 	adj = 0 
+#python 10 # 	suff = "std" 
+#python 11 # elif DAMP==1: 
+#python 12 # 	adj = 1 
+#python 13 # 	suff = "ib" 
+#python 14 # else: 
+#python 15 # 	adj = 2 
+#python 16 # 	suff = "i2b" 
+#python 17 #  
+#python #endpreprocess at rotor_aero.mbd.in:83
+
+set: ifndef const real DAMP = 2.0;
+### aero 
+set: const real R_CUTOUT = .2*R; # m 
+set: const real CHORD = SIGMA*pi*R/N_B; # m; rectangular blade 
+# set: const real BLADE_TWIST = 4.*deg2rad; # radian, root to tip twist (positive when reduces towards the tip) 
+set: const real BLADE_TWIST = 0*4.*deg2rad; # radian, root to tip twist (positive when reduces towards the tip) 
+ 
+# parameters 
+set: const integer N_STEPS_PER_REV = 256; 
+set: const integer N_GAUSS_POINTS_AERO = 5; 
+set: const real T_REV =  2*pi/OMEGA_100; 
+set: const real dt =  2*pi/OMEGA_100/N_STEPS_PER_REV; 
+set: ifndef const real N_PER = 100; 
+begin: initial value; 
+        initial time: 0.;  
+        #final time: 2.;		# increased time to see oscilations  
+        #final time: forever; 
+		final time: N_PER*T_REV; 
+		#time step: 0.001;  
+		#set:const integer TIMESTEP_DRIVE = 1; 
+        #strategy: change,postponed, TIMESTEP_DRIVE; 
+		time step: dt; # number of steps per revolution  
+ 
+	method: ms, 0.4; # spectral radius 
+	# method: bdf; 
+        tolerance: 1.e-6; 
+        max iterations: 20, at most; 
+		# these parameters seem to need further revision 
+        derivatives tolerance: 1e0; 
+		#derivatives coefficient: 1.e-8; 
+ 
+	linear solver: naive, colamd, pivot factor, 1.e-9; 
+        # output: iterations; 
+        # output: residual; 
+end: initial value; 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:119
+
+#python 1 # if DAMP == 2: 
+#python 2 # 	print("set: const integer AJ = 6;") 
+#python 3 # 	print("set: const integer AN = 4;") 
+#python 4 # else: 
+#python 5 # 	print("set: const integer AJ = 0;") 
+#python 6 # 	print("set: const integer AN = 0;") 
+#python 7 #  
+#python #endpreprocess at rotor_aero.mbd.in:127
+
+set: const integer AJ = 6;
+set: const integer AN = 4;
+ 
+begin: control data; 
+    structural nodes: 
+    +1          # Airframe 
+	+1			# Hub 
+	#+1			# Fixed swashplate 
+	#+1			# Rotating swashplate 
+    +N_B*( 
+        +1		# Rigid blades 
+		+1		# Dummy nodes at tip 
+		+AN		# Additional nodes      
+    ) 
+    ; 
+ 
+	rigid bodies: 
+		# +1		# Airframe 
+		+1			# Hub 
+		# +1		# fixed swashplate 
+		# +1		# rotating swashplate 
+		+N_B*( 
+			+1		# Rigid blade 
+			+AN		# Additional bodies 
+		) 
+	; 
+    joints: 
+		+1		# Airframe clamp 
+		+1		# Hub rotation 
+		#+1		# Fixed swashplate 
+		#+1		# Rotating to fixed swashplate 
+		#+1		# Rotating swashplate to hub 
+    +N_B*( 
+        +1      # Blade hinge 
+        +1      # Elastomeric hinge 
+		+AJ		# Additional Joints 
+		#+1		# Impossed movement 
+		#+1		# pitch link 
+    ) 
+    ; 
+	 
+	/* 
+	### aero 
+	 
+	air properties; 
+	induced velocity elements: 1; 
+	aerodynamic elements: 
+		+N_B*( 
+			+1	# aerodynamic body 
+		) 
+	; 
+	### aero 
+	*/ 
+	 
+	/* 
+	## loadable elements for harmonic excitation 
+	loadable elements: 1; 
+	*/ 
+ 
+	forces: N_B; 
+	title: "Airborne of Hammond Rotor"; 
+ 
+	#output meter: string, "Time >= T_REV"; 
+	#print: dof description; 
+	#print: all; 
+	default output: reference frames; 
+	output results: netcdf, no text; 
+end: control data; 
+ 
+# Begin numbering segment 
+set: const integer GROUND = 0; 
+set: const integer IC = 50; 
+set: const integer AIRFRAME = 100; 
+set: const integer HUB = 10000; 
+set: const integer SWASHPLATE_FIXED = HUB + 10; 
+set: const integer SWASHPLATE_ROTATING = HUB + 20; 
+set: const integer BLADE_FLAP_OFFSET = 30; 
+set: const integer BLADE_CM = 40; 
+set: const integer BLADE_TIP = 44; 
+set: const integer PITCH_LINK = 50; 
+set: const integer PITCH_LINK_TOP = PITCH_LINK + 1; 
+set: const integer PITCH_LINK_BOTTOM = PITCH_LINK + 2; 
+set: const integer A_NOD = 61 ; 
+set: const integer B_NOD = 62 ; 
+set: const integer C_NOD = 70 ; 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:212
+
+#python 1 # for b in range(N_B): 
+#python 2 # 	print("set: const integer BLADE_", (b+1), " = HUB + 1000*", (b+1), ";",sep=''); 
+#python 3 # print(""); 
+#python #endpreprocess at rotor_aero.mbd.in:216
+
+set: const integer BLADE_1 = HUB + 1000*1;
+set: const integer BLADE_2 = HUB + 1000*2;
+set: const integer BLADE_3 = HUB + 1000*3;
+set: const integer BLADE_4 = HUB + 1000*4;
+
+ 
+# variable assigned for blade index 
+set: integer BLADE; 
+# this variable will be assigned the value of the current blade's label 
+set: integer CURR_BLADE; 
+# Variable assigned to adjacent blade's label (for ib or i2b) 
+set: integer NXT_BLADE; 
+#python #beginpreprocess at rotor_aero.mbd.in:224
+
+#python 1 # if DAMP==2: 
+#python 2 # 	print("# Variable assigned to intermediate blade's label (for i2b)"); 
+#python 3 # 	print("set: integer INT_BLADE;") 
+#python #endpreprocess at rotor_aero.mbd.in:228
+
+# Variable assigned to intermediate blade's label (for i2b)
+set: integer INT_BLADE;
+ 
+ 
+# Hub properties 
+# * position 
+set: const real Z_HUB = 2.0; # m, relative to airframe 
+set: const real Z_SWASHPLATE = -0.3; # m, relative to hub 
+# * interia 
+set: const real M_HUB = 1.; # kg; define 
+set: const real J_HUB_X = 1.; # kg m^2; define 
+set: const real J_HUB_Z = 2.; # kg m^2; define 
+ 
+# Blade properties 
+# * position (w.r.t Hub) 
+set: const real X_BLADE_FLAP_OFFSET = 0.3048; # [m]; define 
+set: const real X_BLADE_CM = 0.5*(R - X_BLADE_FLAP_OFFSET); # m; define 
+ 
+# ------------ NOVEL BLADE MODEL --------------- 
+#	X_BLADE_FLAP_OFFSET 
+#  <------------> 
+# 
+#	c_bar	c 
+#  <-----|------> 
+#  	   d 
+#	  <--> 
+#				o							^ 
+#	   o		|	___________________		|	a 
+#		\		|	|					\	| 
+#  o-----o======o---|					|	- 
+#		/		|	|					|	| 
+#	   o		|	--------------------	|	b 
+#				0							v 
+#	  <--> 
+#	   f 
+# 
+# Front chordwise bar 
+set: real A_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define 
+# Rear chordwise bar 
+set: real B_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define 
+# Cylindrical damper position 
+set: real C_BAR = X_BLADE_FLAP_OFFSET/4;	# [m]; define 
+set: ifndef real C_BARA = C_BAR;					# [m]; define 
+set: ifndef real C_BARB = C_BAR;					# [m]; define 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:272
+
+#python 1 # if DAMP==2: 
+#python 2 # 	print("set: const integer D_NOD = 80 ;")  
+#python 3 # 	print("set: const integer BD_ROD = 85 ;") 
+#python 4 # 	print("set: const integer BD_LINK = 82;") 
+#python 5 # 	print("set: ifndef real D_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define") 
+#python 6 # 	 
+#python 7 # 	print("set: const integer F_NOD = 90 ;") 
+#python 8 # 	print("set: const integer AF_ROD = 95 ;") 
+#python 9 # 	print("set: const integer AF_LINK = 92;") 
+#python 10 # 	print("set: ifndef real F_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define")  
+#python 11 #  
+#python 12 # 	print("set: real X_AF = ( X_BLADE_FLAP_OFFSET-C_BAR-F_BAR)*cos(DELTAPSI)-(X_BLADE_FLAP_OFFSET+C_BARA);") 
+#python 13 # 	print("set: real Y_AF = ( X_BLADE_FLAP_OFFSET-C_BAR-F_BAR)*sin(DELTAPSI)-(A_BAR);") 
+#python 14 # 	print("set: real Z_AF = 0.;") 
+#python 15 #  
+#python 16 # 	print("set: real X_BD = ( X_BLADE_FLAP_OFFSET-C_BAR-D_BAR)*cos(DELTAPSI)-(X_BLADE_FLAP_OFFSET+C_BARB);") 
+#python 17 # 	print("set: real Y_BD = -( X_BLADE_FLAP_OFFSET-C_BAR-D_BAR)*sin(DELTAPSI)+(B_BAR);") 
+#python 18 # 	print("set: real Z_BD = 0.;") 
+#python #endpreprocess at rotor_aero.mbd.in:291
+
+set: const integer D_NOD = 80 ;
+set: const integer BD_ROD = 85 ;
+set: const integer BD_LINK = 82;
+set: ifndef real D_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define
+set: const integer F_NOD = 90 ;
+set: const integer AF_ROD = 95 ;
+set: const integer AF_LINK = 92;
+set: ifndef real F_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define
+set: real X_AF = ( X_BLADE_FLAP_OFFSET-C_BAR-F_BAR)*cos(DELTAPSI)-(X_BLADE_FLAP_OFFSET+C_BARA);
+set: real Y_AF = ( X_BLADE_FLAP_OFFSET-C_BAR-F_BAR)*sin(DELTAPSI)-(A_BAR);
+set: real Z_AF = 0.;
+set: real X_BD = ( X_BLADE_FLAP_OFFSET-C_BAR-D_BAR)*cos(DELTAPSI)-(X_BLADE_FLAP_OFFSET+C_BARB);
+set: real Y_BD = -( X_BLADE_FLAP_OFFSET-C_BAR-D_BAR)*sin(DELTAPSI)+(B_BAR);
+set: real Z_BD = 0.;
+# Additional parameters for bar distances 
+/* 
+set: real AUX = X_BLADE_FLAP_OFFSET-(C_BAR+F_BAR); 
+set: real D1 = sqrt(AUX^2+X_BLADE_FLAP_OFFSET^2-2*AUX*X_BLADE_FLAP_OFFSET*cos(DELTAPSI)); 
+set: real PHI = pi/2-asin(AUX/D1*sin(DELTAPSI)); 
+set: real L = sqrt(D1^2+A_BAR^2-2*A_BAR*D1*cos(PHI)); 
+*/ 
+ 
+# * inertia properties 
+set: const real M_BLADE = 94.9; # [kg]; define 
+set: const real S_BLADE_Z = 289.1; # [kg m]; define 
+set: const real X_BLADE_CM_REL = S_BLADE_Z/M_BLADE; # [m]; define 
+#set: const real X_BLADE_CM = X_BLADE_CM_REL + X_BLADE_FLAP_OFFSET; # [m]; define 
+set: const real J_BLADE_CM_X = 0.; # [kg m^2]; define 1084.7 [kg m^2] 
+set: const real J_BLADE_CM_Y = 0.; # [kg m^2]; define 
+set: const real J_BLADE_Z = 1084.7; # [kg m^2] 
+set: const real J_BLADE_CM_Z = J_BLADE_Z - S_BLADE_Z*X_BLADE_CM_REL; # [kg m^2]; 
+ 
+# * equivalent (visco)elastic properties of elastomeric hinge 
+set: const integer CL_BLADE_ROOT_OK = 98; 
+set: const integer CL_BLADE_ROOT_FAILED = 99; 
+set: integer CURR_CL_BLADE_ROOT; 
+set: const real K_BLADE_ROOT_X = 0.; 
+set: const real K_BLADE_ROOT_Y = 0.; 
+set: const real K_BLADE_ROOT_Z = 0.; 
+# Factor for the equivalence between std, ib and i2b damping ratios 
+set: real FACT; 
+set: real C_BLADE_ROOT_Z; 
+#python #beginpreprocess at rotor_aero.mbd.in:320
+
+#python 1 # X_BLADE_FLAP_OFFSET =  0.3048; 
+#python 2 # C_BAR = X_BLADE_FLAP_OFFSET/4; 
+#python 3 # A_BAR = X_BLADE_FLAP_OFFSET/2; 
+#python 4 # C_Mz = 4067.5 
+#python 5 # if DAMP ==1: 
+#python 6 # 	phi = (np.pi-Delta_psi)/2 
+#python 7 # 	eqdamp = C_Mz/(10*C_BAR**2*(np.sin(phi))**2) 
+#python 8 # 	#print("set: const real C_D ="+ str(round(eqdamp,1)) +" ;") 
+#python 9 # 	print("set: FACT = 1/(2*(1-cos(DELTAPSI)));") 
+#python 10 # 	print("set: const real C_D = 1.5567e+05*FACT;") 
+#python 11 # 	print("set: const real C_BLADE_ROOT_X = 0. ;") 
+#python 12 # 	print("set: const real C_BLADE_ROOT_Y = 0. ;") 
+#python 13 # 	print("set: C_BLADE_ROOT_Z = C_D;") 
+#python 14 # elif DAMP==0: 
+#python 15 # 	print("set: FACT = 1;") 
+#python 16 # 	print("set: const real C_BLADE_ROOT_X = 0.;") 
+#python 17 # 	print("set: const real C_BLADE_ROOT_Y = 0.;") 
+#python 18 # 	print("set: C_BLADE_ROOT_Z = 4067.5*FACT;") 
+#python 19 # elif DAMP==2: 
+#python 20 # 	print("set: const real C_BLADE_ROOT_X = 0.;") 
+#python 21 # 	print("set: const real C_BLADE_ROOT_Y = 0.;") 
+#python 22 # 	print("set: FACT = 1/(2*(1-cos(2*DELTAPSI)));") 
+#python 23 # 	if N_B==4: 
+#python 24 # 		print("set: C_BLADE_ROOT_Z = "+str(round(C_Mz,1))+"/(9^2/10^2)*FACT;") 
+#python 25 # 	elif N_B==5: 
+#python 26 # 		print("set: C_BLADE_ROOT_Z = 4067.5/1.0142*FACT;") 
+#python #endpreprocess at rotor_aero.mbd.in:347
+
+set: const real C_BLADE_ROOT_X = 0.;
+set: const real C_BLADE_ROOT_Y = 0.;
+set: FACT = 1/(2*(1-cos(2*DELTAPSI)));
+set: C_BLADE_ROOT_Z = 4067.5/(9^2/10^2)*FACT;
+# More sophisticated definition of the damping values 
+/* 
+set: const real LEAD_LAG_CSI = 0.3; 
+set: const real LEAD_LAG_OMEGA = sqrt(3./2*X_BLADE_FLAP_OFFSET/R)*OMEGA_100; 
+set: const real LEAD_LAG_DAMPER_C = 2*LEAD_LAG_CSI*LEAD_LAG_OMEGA*(J_BLADE_CM_Z + M_BLADE*X_BLADE_CM^2); 
+*/ 
+ 
+# Operative damper constitutive law 
+constitutive law: CL_BLADE_ROOT_OK, 3, 
+		linear viscoelastic generic, 
+			diag, K_BLADE_ROOT_X, K_BLADE_ROOT_Y, K_BLADE_ROOT_Z, 
+			diag, C_BLADE_ROOT_X, C_BLADE_ROOT_Y, C_BLADE_ROOT_Z; 
+# Inoperative damper constitutive law 
+constitutive law: CL_BLADE_ROOT_FAILED, 3, 
+		linear viscoelastic generic, 
+			diag, K_BLADE_ROOT_X, K_BLADE_ROOT_Y, K_BLADE_ROOT_Z, 
+			diag, C_BLADE_ROOT_X, C_BLADE_ROOT_Y, 0.; # failed damper 
+ 
+# Pitch link 
+/* 
+        (radial) offset of pitch link: X_PITCH_HORN 
+       |---| 
+           o               - 
+          /                | (chordwise) offset of pitch link: Y_PITCH_HORN 
+         /                 | 
+  +-----o-------------     - 
+   
+ */ 
+ 
+/*             Y_PITCH_HORN 
+             o--------+ 
+             ^  
+             | z swashplate 
+ */ 
+# * position 
+set: const real X_PITCH_HORN = 0.; # m; define; <> 0 implies delta_3 (pitch-flap coupling); delta_3 = atan2(X_PITCH_HORN, Y_PITCH_HORN); X_PITCH_HORN = Y_PITCH_HORN*tan(delta_3) 
+set: const real Y_PITCH_HORN = 0.2; # m; define 
+ 
+# gear ratios for pitch control system 
+set: const real COLLECTIVE_GEAR_RATIO = Y_PITCH_HORN; 
+set: const real CYCLIC_GEAR_RATIO = Y_PITCH_HORN/sqrt(X_BLADE_FLAP_OFFSET^2 + Y_PITCH_HORN^2); 
+ 
+set: const integer D_PITCH_INPUT_COLLECTIVE = 75; 
+set: const integer D_PITCH_INPUT_CYCLIC_LATERAL = 76; 
+set: const integer D_PITCH_INPUT_CYCLIC_LONGITUDINAL = 77; 
+set: real PITCH_T1 = 0.2; # s, ramp-up time of pitch controls 
+/* 
+### NOTE: angles in radian 
+drive caller: D_PITCH_INPUT_COLLECTIVE, 
+	# const, 0.; 
+	cosine, 0., pi/PITCH_T1, INPUT_THETA_0/2, half, 0.; 
+### NOTE: positive cyclics with "-" because theta = theta_0 - A_1 *cos(psi) - B_1 * sin(psi) 
+drive caller: D_PITCH_INPUT_CYCLIC_LATERAL, 
+	const, 0.; 
+	# cosine, 0., pi/PITCH_T1, -INPUT_A_1_H/2, half, 0.; 
+drive caller: D_PITCH_INPUT_CYCLIC_LONGITUDINAL, 
+	# const, 0.; 
+	cosine, 0., pi/PITCH_T1, -INPUT_B_1_H/2, half, 0.; 
+*/ 
+ 
+/* 
+# Aerodynamic data 
+set: const integer NACA0012 = 12; # label of aerodynamic data 
+c81 data: NACA0012, "naca0012.c81"; # aerodynamic data (the file "naca0012.c81" is in MBDyn's var/ folder 
+### aero 
+*/ 
+ 
+# Reference frames definition 
+ 
+reference: GROUND, 
+  reference, global, null,		# position 
+  reference, global, eye,		# orientation 
+  reference, global, null,		# velocity 
+  reference, global, null;		# angular velocity 
+ 
+reference: AIRFRAME, 
+	reference, GROUND, null, 
+	reference, GROUND, eye, 
+/* 
+	reference, GROUND, 
+		2, 0., 1., 0., 
+		1., cos(GAMMA), 0., sin(GAMMA), 
+*/ 
+	reference, GROUND, null, 
+	reference, GROUND, null; 
+ 
+reference: HUB, 
+	reference, AIRFRAME, 0., 0., Z_HUB, 
+	reference, AIRFRAME, eye, 
+	reference, AIRFRAME, null, 
+	reference, AIRFRAME, 0., 0., OMEGA_0; 
+ 
+# because of the arrangement of the pitch horn, the blade "sees" the swashplate ahead by PSI_SW instead of 90 deg, 
+# so the reference system is rotated backward by the required amount 
+set: const real sin_PSI_SW = Y_PITCH_HORN/sqrt(Y_PITCH_HORN^2 + X_BLADE_FLAP_OFFSET^2); 
+set: const real cos_PSI_SW = X_BLADE_FLAP_OFFSET/sqrt(Y_PITCH_HORN^2 + X_BLADE_FLAP_OFFSET^2); 
+/* 
+reference: SWASHPLATE_FIXED, 
+	reference, HUB, 0., 0., Z_SWASHPLATE, 
+	reference, AIRFRAME, 
+		# eye, 
+		3, 0., 0., 1., 
+		1, sin_PSI_SW, -cos_PSI_SW, 0., 
+	reference, AIRFRAME, null, 
+	reference, AIRFRAME, null; 
+ 
+reference: SWASHPLATE_ROTATING, 
+	reference, SWASHPLATE_FIXED, null, 
+	reference, SWASHPLATE_FIXED, eye, 
+	reference, HUB, null, 
+	reference, HUB, null; 
+*/ 
+# Python subscript for automatic reference frame creation in blades 
+#python #beginpreprocess at rotor_aero.mbd.in:461
+
+#python 1 #  
+#python 2 # for b in range(1,N_B+1): 
+#python 3 # 	curr_blade = b 
+#python 4 # 	print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 5 # 	print("# Standard reference frames") 
+#python 6 # 	print("include: \"rotor_blade.ref\";"); 
+#python 7 # 	if DAMP != 0: 
+#python 8 # 		print("# Additional reference frames") 
+#python 9 # 		print("include: \"additional_"+suff+".ref\";"); 
+#python #endpreprocess at rotor_aero.mbd.in:471
+
+set: CURR_BLADE = BLADE_1;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_i2b.ref";
+set: CURR_BLADE = BLADE_2;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_i2b.ref";
+set: CURR_BLADE = BLADE_3;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_i2b.ref";
+set: CURR_BLADE = BLADE_4;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_i2b.ref";
+ 
+# create nodes, joints etc. 
+begin: nodes; 
+	# Symbolic ground node 
+	structural: AIRFRAME, static, 
+		reference, AIRFRAME, null, 
+		reference, AIRFRAME, eye, 
+		reference, AIRFRAME, null, 
+		reference, AIRFRAME, null; 
+ 
+	structural: HUB, dynamic, 
+		reference, HUB, null, 
+		reference, HUB, eye, 
+		reference, HUB, null, 
+		reference, HUB, null; 
+	/* 
+	structural: SWASHPLATE_FIXED, static, 
+		reference, SWASHPLATE_FIXED, null, 
+		reference, SWASHPLATE_FIXED, eye, 
+		reference, SWASHPLATE_FIXED, null, 
+		reference, SWASHPLATE_FIXED, null; 
+ 
+	structural: SWASHPLATE_ROTATING, static, 
+		reference, SWASHPLATE_ROTATING, null, 
+		reference, SWASHPLATE_ROTATING, eye, 
+		reference, SWASHPLATE_ROTATING, null, 
+		reference, SWASHPLATE_ROTATING, null; 
+	*/ 
+	# Blade nodes 
+	# Use python subscript for automatic numbering 
+#python #beginpreprocess at rotor_aero.mbd.in:502
+
+#python 1 #  
+#python 2 #  
+#python 3 # for b in range(1,N_B+1): 
+#python 4 # 	curr_blade = b 
+#python 5 # 	nxt_blade = (b+2) % N_B 
+#python 6 # 	if nxt_blade== 0: 
+#python 7 # 		nxt_blade = N_B 
+#python 8 #  
+#python 9 # 	print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 10 # 	print("# Structural node of the blade") 
+#python 11 # 	print("	include: \"rotor_blade.nod\";"); 
+#python 12 # 	if DAMP==2: 
+#python 13 # 		print("# Additional nodes for the i2b") 
+#python 14 # 		print("	include: \"additional_"+suff+".nod\";"); 
+#python 15 # #[print(d) for d in nodes] 
+#python #endpreprocess at rotor_aero.mbd.in:518
+
+set: CURR_BLADE = BLADE_1;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+# Additional nodes for the i2b
+	include: "additional_i2b.nod";
+set: CURR_BLADE = BLADE_2;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+# Additional nodes for the i2b
+	include: "additional_i2b.nod";
+set: CURR_BLADE = BLADE_3;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+# Additional nodes for the i2b
+	include: "additional_i2b.nod";
+set: CURR_BLADE = BLADE_4;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+# Additional nodes for the i2b
+	include: "additional_i2b.nod";
+end: nodes; 
+ 
+begin: elements; 
+	/* 
+	set: const integer HARMONIC_EXCITATION = 3333; 
+	module load: "libmodule-hfelem";  
+	user defined: HARMONIC_EXCITATION, harmonic excitation, 
+		inputs number, 1, 
+			node, BLADE_1, structural, string, "Phi[3]", direct, 
+			#node, BLADE_1, structural, string, "omega[3]", direct, 
+		steps number, N_STEPS_PER_REV, 
+		initial angular frequency, OMEGA_100, 
+		max angular frequency, 7*OMEGA_100, # otherwise forever (or until max time) 
+		angular frequency increment, 
+		additive, OMEGA_100, 
+		# multiplicative, 1.06, 
+		# custom, 4.*2*pi, 8.*2*pi, 15.*2*pi, 20.*2*pi, 30.*2*pi, last, 
+		# initial time, 5., # defaults to "always" 
+		tolerance, 1.e-8,  
+		min periods, 2, 
+		#timestep drive label, TIMESTEP_DRIVE, 
+		write after convergence periods, 2; 
+ 
+	 
+	output: loadable, HARMONIC_EXCITATION;  
+ 
+	drive caller: TIMESTEP_DRIVE, element, HARMONIC_EXCITATION, loadable,   
+		string, "timestep", direct;  
+ 
+	drive caller : OUTPUT_HARMONIC , 
+		element , HARMONIC_EXCITATION , loadable , 
+		string , "output" , direct; 
+	 
+	# Store the actual value of the order of the harmonic  
+	set: [element,HARM,HARMONIC_EXCITATION,loadable,string=count];  
+	*/ 
+ 
+ 
+	body: HUB, HUB, 
+		M_HUB, 
+		null, 
+		diag, J_HUB_X, J_HUB_X, J_HUB_Z; 
+	# clamp airframe 
+	joint: AIRFRAME, clamp, AIRFRAME, node, node; 
+	 
+	# airframe-hub joint 
+	joint: HUB, total joint, 
+		AIRFRAME,	# label of node #1 
+			position, reference, HUB, null, 
+			position orientation, reference, AIRFRAME, eye, 
+			rotation orientation, reference, AIRFRAME, eye, 
+		HUB, 
+			position, reference, HUB, null, 
+			position orientation, reference, HUB, eye, 
+			rotation orientation, reference, HUB, eye, 
+		position constraint,  
+			1,					# X-translation 
+			1,					# Y-translation  
+			1,					# Z-translation 
+			null,				# Imposed relative position 
+		# Build up movement of rotor rotation 
+		orientation constraint, 1, 1, 1, 0., 0., 1., linear, 0., OMEGA_0; 
+		# Rotor starts at fixed angular speed 
+		#orientation constraint, 1,1,angular velocity,0., 0., 1., const, OMEGA_0; 
+	/* 
+	# fixed swashplate 
+	joint: SWASHPLATE_FIXED, total joint, 
+		AIRFRAME, 
+			position, reference, SWASHPLATE_FIXED, null, 
+			position orientation, reference, SWASHPLATE_FIXED, eye, 
+			rotation orientation, reference, SWASHPLATE_FIXED, eye, 
+		SWASHPLATE_FIXED, 
+			position, reference, SWASHPLATE_FIXED, null, 
+			position orientation, reference, SWASHPLATE_FIXED, eye, 
+			rotation orientation, reference, SWASHPLATE_FIXED, eye, 
+		position constraint, 1, 1, 1, 
+			0., 0., COLLECTIVE_GEAR_RATIO, # gear ratio 
+				# displacement controls collective pitch 
+				reference, D_PITCH_INPUT_COLLECTIVE, 
+		orientation constraint, 1, 1, 1, 
+			component, 
+				# rotation controls cyclic pitch 
+				# lateral 
+					drive, linear, 0., CYCLIC_GEAR_RATIO, reference, D_PITCH_INPUT_CYCLIC_LATERAL, 
+				# longitudinal 
+					drive, linear, 0., CYCLIC_GEAR_RATIO, reference, D_PITCH_INPUT_CYCLIC_LONGITUDINAL, 
+				inactive; 
+ 
+	# fixed to rotating swashplate 
+	joint: SWASHPLATE_ROTATING, total joint, 
+		SWASHPLATE_FIXED, 
+			position, reference, SWASHPLATE_FIXED, null, 
+			position orientation, reference, SWASHPLATE_FIXED, eye, 
+			rotation orientation, reference, SWASHPLATE_FIXED, eye, 
+		SWASHPLATE_ROTATING, 
+			position, reference, SWASHPLATE_ROTATING, null, 
+			position orientation, reference, SWASHPLATE_ROTATING, eye, 
+			rotation orientation, reference, SWASHPLATE_ROTATING, eye, 
+		position constraint, 1, 1, 1, null, 
+		orientation constraint, 1, 1, 0, null; 
+ 
+	# rotating swashplate to hub 
+	joint: SWASHPLATE_ROTATING + 1, total joint, 
+		HUB, 
+			position, reference, SWASHPLATE_ROTATING, null, 
+			position orientation, reference, SWASHPLATE_ROTATING, eye, 
+			rotation orientation, reference, SWASHPLATE_ROTATING, eye, 
+		SWASHPLATE_ROTATING, 
+			position, reference, SWASHPLATE_ROTATING, null, 
+			position orientation, reference, SWASHPLATE_ROTATING, eye, 
+			rotation orientation, reference, SWASHPLATE_ROTATING, eye, 
+		position constraint, 0, 0, 0, null, 
+		orientation constraint, 0, 0, 1, null; 
+	*/ 
+	/* 
+	### aero 
+	air properties: std, SI, 
+		reference altitude, ALTITUDE, 
+		single, 
+			# NOTE: for convenience, mount the rotor with vertical shaft and put gamma + tau in alpha_H 
+			cos(ALPHA_H), 0., -sin(ALPHA_H), 
+			# const, 0.; 
+			cosine, 0., pi/.2, V_INF/2, half, 0.; 
+	induced velocity: 99, rotor, 
+		AIRFRAME, 
+		HUB, 
+		induced velocity, 
+			# no; 
+			uniform, OMEGA_100, R, max iterations, 10, tolerance, 1e-3, delay, .9; 
+	### aero 
+	*/ 
+	# Hub-blade conections and dampers 
+#python #beginpreprocess at rotor_aero.mbd.in:651
+
+#python 1 #  
+#python 2 # for b in range(1,N_B+1): 
+#python 3 # 	curr_blade = b 
+#python 4 #  
+#python 5 # 	nxt_blade = (b+adj) % N_B 
+#python 6 # 	if nxt_blade== 0: 
+#python 7 # 		nxt_blade = N_B 
+#python 8 #  
+#python 9 # 	int_blade = (b+adj-1) % N_B 
+#python 10 # 	if int_blade== 0: 
+#python 11 # 		int_blade = N_B 
+#python 12 # 	print("set: BLADE = ",curr_blade, ";",sep=''); 
+#python 13 # 	print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 14 # 	if DAMP==2: 
+#python 15 # 		print("set: INT_BLADE = BLADE_", int_blade, ";",sep=''); 
+#python 16 # 	else: 
+#python 17 # 		print("set: NXT_BLADE = BLADE_", nxt_blade, ";",sep=''); 
+#python 18 # 	 
+#python 19 # 	print("set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_OK;",sep=''); 
+#python 20 # 	print("	include: \"rotor_blade.elm\";"); 
+#python 21 # 	print("#	include: \"rotor_blade_aero.elm\";"); 
+#python 22 # 	print("	include: \"additional_"+suff+".elm\";"); 
+#python 23 # 	print("	include: \"initial_condition.elm\";"); 
+#python 24 # if DAMP ==2: 
+#python 25 # 	for b in range(1,N_B+1): 
+#python 26 # 		curr_blade = b 
+#python 27 # 		print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 28 # 		print("	include: \"additional_"+suff+"_p2.elm\";"); 
+#python 29 # #[print(d) for d in bodies] 
+#python 30 # #[print(d) for d in joints] 
+#python #endpreprocess at rotor_aero.mbd.in:682
+
+set: BLADE = 1;
+set: CURR_BLADE = BLADE_1;
+set: INT_BLADE = BLADE_2;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_OK;
+	include: "rotor_blade.elm";
+#	include: "rotor_blade_aero.elm";
+	include: "additional_i2b.elm";
+	include: "initial_condition.elm";
+set: BLADE = 2;
+set: CURR_BLADE = BLADE_2;
+set: INT_BLADE = BLADE_3;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_OK;
+	include: "rotor_blade.elm";
+#	include: "rotor_blade_aero.elm";
+	include: "additional_i2b.elm";
+	include: "initial_condition.elm";
+set: BLADE = 3;
+set: CURR_BLADE = BLADE_3;
+set: INT_BLADE = BLADE_4;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_OK;
+	include: "rotor_blade.elm";
+#	include: "rotor_blade_aero.elm";
+	include: "additional_i2b.elm";
+	include: "initial_condition.elm";
+set: BLADE = 4;
+set: CURR_BLADE = BLADE_4;
+set: INT_BLADE = BLADE_1;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_OK;
+	include: "rotor_blade.elm";
+#	include: "rotor_blade_aero.elm";
+	include: "additional_i2b.elm";
+	include: "initial_condition.elm";
+set: CURR_BLADE = BLADE_1;
+	include: "additional_i2b_p2.elm";
+set: CURR_BLADE = BLADE_2;
+	include: "additional_i2b_p2.elm";
+set: CURR_BLADE = BLADE_3;
+	include: "additional_i2b_p2.elm";
+set: CURR_BLADE = BLADE_4;
+	include: "additional_i2b_p2.elm";
+ 
+	inertia: 0, 
+			position, reference, BLADE_1 + BLADE_FLAP_OFFSET, null, 
+			orientation, reference, BLADE_1 + BLADE_FLAP_OFFSET, eye, 
+			body, BLADE_1; 
+end: elements; 
+
+
+# vim:ft=mbd
+
+

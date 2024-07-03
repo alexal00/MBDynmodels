@@ -1,0 +1,76 @@
+# ------ GR MODEL: blade node(s) ------
+# ------------ NOVEL BLADE MODEL ---------------
+#	X_BLADE_FLAP_OFFSET
+#  <------------>
+#
+#	c_bar	c
+#  <-----|------>
+#  	   d
+#	  <-->
+#				o							^
+#	   o		|	___________________		|	a
+#		\		|	|					\	|
+#  o-----o======o---|					|	-
+#		/		|	|					|	|
+#	   o		|	--------------------	|	b
+#				0							v
+#	  <-->
+#	   f
+#
+# Front chordwise bar
+/*
+set: const integer A_NOD = 50 ;
+set: const real A = X_BLADE_FLAP_OFFSET/2;
+# Rear chordwise bar
+set: const integer B_NOD = 60 ;
+set: const real B = -X_BLADE_FLAP_OFFSET/2;
+
+set: const integer C_NOD = 70 ;
+set: const real C = -X_BLADE_FLAP_OFFSET/4;
+
+set: const integer D_NOD = 80 ;
+set: const real D = X_BLADE_FLAP_OFFSET/2;
+
+set: const integer F_NOD = 90 ;
+set: const real F = X_BLADE_FLAP_OFFSET/2;
+*/
+# Auxiliary nodes
+/*
+structural: CURR_BLADE+A_NOD, dynamic,
+	at reference, CURR_BLADE + A_NOD;
+structural: CURR_BLADE+B_NOD, dynamic,
+	at reference, CURR_BLADE + B_NOD;
+*/
+
+
+# Arm 1 cylindrical damper: Connector with blade i+1 hinge, Di--Bi+1
+structural: CURR_BLADE+D_NOD, dynamic,
+  	position, reference, CURR_BLADE + D_NOD, null,
+	orientation, reference, CURR_BLADE + D_NOD,eye,
+	velocity, reference, CURR_BLADE + D_NOD, null,
+	reference, CURR_BLADE + D_NOD, null;
+		#assembly, 1., 0., no;
+# Arm 2 cylindrical damper: Connector with blade i-1 hinge, Fi--Ai-1
+structural: CURR_BLADE+F_NOD, dynamic,
+	position, reference, CURR_BLADE + F_NOD, null,
+	orientation, reference, CURR_BLADE + F_NOD,eye,
+	velocity, reference, CURR_BLADE + F_NOD, null,
+	reference, CURR_BLADE + F_NOD, null;
+		#assembly, 1., 0., no;
+
+# ROD 1: Bar connecting point Ai--Fi+1
+structural: CURR_BLADE+AF_ROD, dynamic,
+	position, reference, CURR_BLADE + AF_ROD, null,
+	orientation, reference, CURR_BLADE + AF_ROD,eye,
+	velocity, reference, CURR_BLADE + AF_ROD, null,
+	reference, CURR_BLADE + AF_ROD, null;
+		#assembly, 1., 0., no;
+
+# ROD 2: Bar connecting point Bi--Di-1
+structural: CURR_BLADE+BD_ROD, dynamic,
+	position, reference, CURR_BLADE + BD_ROD, null,
+	orientation, reference, CURR_BLADE + BD_ROD,eye,
+	velocity, reference, CURR_BLADE + BD_ROD, null,
+	reference, CURR_BLADE + BD_ROD, null;
+		#assembly, 1., 0., no;
+# vim:ft=mbd

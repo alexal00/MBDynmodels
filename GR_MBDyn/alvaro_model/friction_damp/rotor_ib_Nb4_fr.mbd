@@ -1,0 +1,1015 @@
+begin: data; 
+        problem: initial value; 
+end: data; 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:5
+
+#python 1 # from __future__ import print_function, division 
+#python 2 # from MBDynLib import * 
+#python 3 # import numpy as np 
+#python 4 # #nodes = [] 
+#python 5 # #bodies = [] 
+#python 6 # #joints = [] 
+#python 7 # #shells = [] 
+#python 8 # #beams = [] 
+#python 9 #  
+#python 10 # ### DATA START HERE 
+#python 11 #  
+#python 12 # # define here the desired number of blades (>= 4) 
+#python 13 # print("### TO CHANGE `N_B', THE NUMBER OF BLADES, GO BACK TO `rotor_aero.mbd.in', CHANGE `N_B THERE', AND RUN\n###\n###    python MBDynPreprocess.py rotor_aero.mbd.in > rotor_aero.mbd\n###"); 
+#python 14 # N_B = 5; 
+#python 15 # Delta_psi = 2*np.pi/N_B 
+#python 16 # ConstMBVar('N_B', 'integer', N_B) 
+#python 17 # print('set: const real DPSI=2*pi/N_B;',sep=''); 
+#python 18 # ic = 3 
+#python 19 # T = 2*np.pi/3. 
+#python 20 # # Define the initial conditions 
+#python 21 # # 0 : all zero initial conditions 
+#python 22 # # 1 : x0=0.1; xd0=x0/T; y0=0.; yd0=y0/T; 
+#python 23 # #	  xi0 = [0.01, -0.004, 0.005, 0.002];  
+#python 24 # #	  xid0 = xi0/T; 
+#python 25 # # 2 : x0=0.1; xd0=0.; y0=0.; yd0=0.; 
+#python 26 # #	  xi0 = [0.01, -0.004, 0.005, 0.002];  
+#python 27 # #	  xid0 = 0.; 
+#python 28 # # 3 : x0=0.; xd0=0.; y0=0.; yd0=0.; 
+#python 29 # #	  xi0 = [0.01, -0.004, 0.005, 0.002];  
+#python 30 # #	  xid0 = 0.; 
+#python 31 # # Only collective 
+#python 32 # # 4 : x0=0.; xd0=0.; y0=0.; yd0=0.; 
+#python 33 # #	  xi0 = [0.01, 0.01, 0.01, 0.01];  
+#python 34 # #	  xid0 = 0.; 
+#python 35 # # Only reactionless 
+#python 36 # # 5 : x0=0.; xd0=0.; y0=0.; yd0=0.; 
+#python 37 # #	  xi0 = [-0.01, 0.01, -0.01, 0.01];  
+#python 38 # #	  xid0 = 0.; 
+#python 39 # # Only cyclic cosine 
+#python 40 # # 6 : x0=0.; xd0=0.; y0=0.; yd0=0.; 
+#python 41 # #	  xi0 = [0., -0.01, 0., 0.01];  
+#python 42 # #	  xid0 = 0.; 
+#python 43 # # Only cyclic sine 
+#python 44 # # 7 : x0=0.; xd0=0.; y0=0.; yd0=0.; 
+#python 45 # #	  xi0 = [0.01, 0., -0.01, 0.];  
+#python 46 # #	  xid0 = 0.; 
+#python 47 # # Only cyclic 
+#python 48 # # 8 : x0=0.; xd0=0.; y0=0.; yd0=0.; 
+#python 49 # #	  xi0 = [0.01, -0.02, -0.01, 0.02];  
+#python 50 # #	  xid0 = 0.; 
+#python 51 #  
+#python 52 # if ic==0: 
+#python 53 # 	x_0 = 0.; 
+#python 54 # 	xd_0 = 0.; 
+#python 55 # 	y_0 = 0.; 
+#python 56 # 	yd_0 = y_0; 
+#python 57 # 	if N_B ==4: 
+#python 58 # 		xi_0 = [0., 0., 0., 0.]; 
+#python 59 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 60 # 	elif N_B==5: 
+#python 61 # 		xi_vec = [0., 0., 0., 0., 0.]; 
+#python 62 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 63 # 	 
+#python 64 # elif ic==1: 
+#python 65 # 	x_0 = 0.1; 
+#python 66 # 	xd_0 = x_0/T; 
+#python 67 # 	y_0 = 0.; 
+#python 68 # 	yd_0 = y_0/T; 
+#python 69 # 	if N_B==4: 
+#python 70 # 		xi_0 = [0.01, -0.004, 0.005, 0.002]; 
+#python 71 # 		xid_0 = [0.01/T, -0.004/T, 0.005/T, 0.002/T]; 
+#python 72 # 	elif N_B==5: 
+#python 73 # 		xi_0 = [0.01, -0.004, 0.005, 0.002, 0.]; 
+#python 74 # 		xid_0 = [0.01/T, -0.004/T, 0.005/T, 0.002/T, 0./T]; 
+#python 75 # elif ic==2: 
+#python 76 # 	x_0 = 0.1; 
+#python 77 # 	xd_0 = 0.; 
+#python 78 # 	y_0 = 0.; 
+#python 79 # 	yd_0 = 0.; 
+#python 80 # 	if N_B==4: 
+#python 81 # 		xi_0 = [0.01, -0.004, 0.005, 0.002]; 
+#python 82 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 83 # 	elif N_B==5: 
+#python 84 # 		xi_0 = [0.01, -0.004, 0.005, 0.002, 0.]; 
+#python 85 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 86 # elif ic==3: 
+#python 87 # 	x_0 = 0.; 
+#python 88 # 	xd_0 = 0.; 
+#python 89 # 	y_0 = 0.; 
+#python 90 # 	yd_0 = 0.; 
+#python 91 # 	if N_B==4: 
+#python 92 # 		xi_0 = [0.01, -0.004, 0.005, 0.002]; 
+#python 93 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 94 # 	elif N_B==5: 
+#python 95 # 		xi_0 = [0.01, -0.004, 0.005, 0.002, 0.]; 
+#python 96 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 97 # elif ic==4: 
+#python 98 # 	x_0 = 0.; 
+#python 99 # 	xd_0 = 0.; 
+#python 100 # 	y_0 = 0.; 
+#python 101 # 	yd_0 = 0.; 
+#python 102 # 	if N_B==4: 
+#python 103 # 		xi_0 = [0.01, 0.01, 0.01, 0.01]; 
+#python 104 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 105 # 	elif N_B==5: 
+#python 106 # 		xi_0 = [0.01, 0.01, 0.01, 0.01, 0.01]; 
+#python 107 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 108 # elif ic==5: 
+#python 109 # 	x_0 = 0.; 
+#python 110 # 	xd_0 = 0.; 
+#python 111 # 	y_0 = 0.; 
+#python 112 # 	yd_0 = 0.; 
+#python 113 # 	if N_B==4: 
+#python 114 # 		xi_0 = [-0.01, 0.01, -0.01, 0.01]; 
+#python 115 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 116 # 	elif N_B==5: 
+#python 117 # 		xi_0 = [0.01, 0.01, 0.01, 0.01, 0.01]; 
+#python 118 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 119 # elif ic==6: 
+#python 120 # 	x_0 = 0.; 
+#python 121 # 	xd_0 = 0.; 
+#python 122 # 	y_0 = 0.; 
+#python 123 # 	yd_0 = 0.; 
+#python 124 # 	if N_B==4: 
+#python 125 # 		xi_0 = [0., -0.01, 0., 0.01]; 
+#python 126 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 127 # 	elif N_B==5: 
+#python 128 # 		xi_0 = [0.01, 0.01, 0.01, 0.01, 0.01]; 
+#python 129 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 130 # elif ic==7: 
+#python 131 # 	x_0 = 0.; 
+#python 132 # 	xd_0 = 0.; 
+#python 133 # 	y_0 = 0.; 
+#python 134 # 	yd_0 = 0.; 
+#python 135 # 	if N_B==4: 
+#python 136 # 		xi_0 = [0.01, 0., -0.01, 0.]; 
+#python 137 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 138 # 	elif N_B==5: 
+#python 139 # 		xi_0 = [0.01, 0.01, 0.01, 0.01, 0.01]; 
+#python 140 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 141 # elif ic==8: 
+#python 142 # 	x_0 = 0.; 
+#python 143 # 	xd_0 = 0.; 
+#python 144 # 	y_0 = 0.; 
+#python 145 # 	yd_0 = 0.; 
+#python 146 # 	if N_B==4: 
+#python 147 # 		xi_0 = [0.01, -0.02, -0.01, 0.02]; 
+#python 148 # 		xid_0 = [0., 0., 0., 0.]; 
+#python 149 # 	elif N_B==5: 
+#python 150 # 		xi_0 = [0.01, 0.01, 0.01, 0.01, 0.01]; 
+#python 151 # 		xid_0 = [0., 0., 0., 0., 0.]; 
+#python 152 # #ConstMBVar('DPSI','real', Delta_psi) 
+#python #endpreprocess at rotor_aero.mbd.in:158
+
+### TO CHANGE `N_B', THE NUMBER OF BLADES, GO BACK TO `rotor_aero.mbd.in', CHANGE `N_B THERE', AND RUN
+###
+###    python MBDynPreprocess.py rotor_aero.mbd.in > rotor_aero.mbd
+###
+set: const integer N_B = 5;
+set: const real DPSI=2*pi/N_B;
+ 
+# basic main rotor data 
+set: ifndef const real OMEGA_100 = 1.8879; # Angular speed of rotor, [m/s] 
+ 
+set: real OMEGA_0 = OMEGA_100; 
+ 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:166
+
+#python 1 # ## Damping mechanism 
+#python 2 # # 0 : Standard mechanism 
+#python 3 # # 1 : Interblade mechanism 
+#python 4 # # 2 : i2b mechanism 
+#python 5 # DAMP = 1.; 
+#python 6 # print("set: ifndef const real DAMP = ", DAMP, ";",sep=''); 
+#python 7 #  
+#python 8 # if DAMP==0: 
+#python 9 # 	adj = 0 
+#python 10 # 	suff = "std" 
+#python 11 # elif DAMP==1: 
+#python 12 # 	adj = 1 
+#python 13 # 	suff = "ib" 
+#python 14 # else: 
+#python 15 # 	adj = 2 
+#python 16 # 	suff = "i2b" 
+#python 17 #  
+#python #endpreprocess at rotor_aero.mbd.in:184
+
+set: ifndef const real DAMP = 1.0;
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:186
+
+#python 1 # # Select constitutive law 
+#python 2 # # * 1 : nlvisocus with tanh 
+#python 3 # # * 0 : linear viscoelastic 
+#python 4 # FRICTION = 1. 
+#python #endpreprocess at rotor_aero.mbd.in:191
+
+ 
+# parameters 
+set: const integer N_STEPS_PER_REV = 256; 
+set: const integer N_GAUSS_POINTS_AERO = 5; 
+set: const real T_REV =  2*pi/OMEGA_100; 
+set: const real dt =  2*pi/OMEGA_100/N_STEPS_PER_REV; 
+begin: initial value; 
+        initial time: 0.; 
+        final time: 10.+T_REV;		# increased time to see oscilations 
+        #time step: 0.001; 
+        time step: dt; # number of steps per revolution 
+ 
+	method: ms, 0.6; # spectral radius 
+	# method: bdf; 
+        tolerance: 1.e-8; 
+        max iterations: 20, at most; 
+		# these parameters seem to need further revision 
+        derivatives tolerance: 1e0; 
+		#derivatives coefficient: 1.e-8; 
+ 
+	# linear solver: naive, colamd, pivot factor, 1.e-9; 
+        # output: iterations; 
+        # output: residual; 
+ 
+		#abort after: assembly; 
+end: initial value; 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:219
+
+#python 1 # if DAMP == 2: 
+#python 2 # 	print("set: const integer AJ = 6;") 
+#python 3 # 	print("set: const integer AN = 4;") 
+#python 4 # else: 
+#python 5 # 	print("set: const integer AJ = 0;") 
+#python 6 # 	print("set: const integer AN = 0;") 
+#python 7 #  
+#python #endpreprocess at rotor_aero.mbd.in:227
+
+set: const integer AJ = 0;
+set: const integer AN = 0;
+ 
+begin: control data; 
+    structural nodes: 
+    +1          # Ground 
+    +1          # Airframe x 
+    +1          # Airframe y 
+	+1			# Hub 
+    +N_B*( 
+        +1		# Rigid blades 
+		+AN		# Additional nodes      
+    ) 
+    ; 
+    rigid bodies: 
+    #+1          # Hub 
+    +1          # Airframe Mx 
+    +1          # Airframe My 
+    +N_B*( 
+        +1      # Blade, M_B 
+		+AN		# Additional bodies 
+    ) 
+    ; 
+    joints: 
+    +1          # Ground clamp 
+    +1          # Airframe x 
+    +1          # Kx, Cx 
+	+1			# x, x_dot 
+    +1          # Airframe y 
+    +1          # Ky, Cy 
+	+1			# y, y_dot 
+    +1          # Hub 
+    +N_B*( 
+        +1      # Blade hinge 
+        +1      # Elastomeric hinge 
+		+AJ		# Additional Joints 
+		+1		# xi, xi_dot 
+    ) 
+    ; 
+	/* 
+	### aero 
+	air properties; 
+	induced velocity elements: 1; 
+	aerodynamic elements: 
+		+N_B*( 
+			+1	# aerodynamic body 
+		) 
+	; 
+	### aero 
+	*/ 
+	title: "GR of Hammond Rotor"; 
+	#output meter: string, "Time >= T_REV"; 
+	#print: dof description; 
+	#print: all; 
+	default output: reference frames; 
+	output results: netcdf, no text; 
+ 
+	#max iterations: 3; 
+	#omega rotates: yes; 
+	#tolerance: 1e0; 
+end: control data; 
+ 
+# Begin numbering segment 
+ 
+set: const integer GROUND = 0; 
+set: const integer IC = 50; 
+set: const integer AIRFRAME_X = 100; 
+set: const integer AIRFRAME_Y = 200; 
+set: const integer HUB = 10000; 
+set: const integer BLADE_FLAP_OFFSET = 30; 
+set: const integer BLADE_CM = 40; 
+set: const integer A_NOD = 50 ; 
+set: const integer B_NOD = 60 ; 
+set: const integer C_NOD = 70 ; 
+ 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:302
+
+#python 1 # for b in range(N_B): 
+#python 2 # 	print("set: const integer BLADE_", (b+1), " = HUB + 1000*", (b+1), ";",sep=''); 
+#python 3 # print(""); 
+#python #endpreprocess at rotor_aero.mbd.in:306
+
+set: const integer BLADE_1 = HUB + 1000*1;
+set: const integer BLADE_2 = HUB + 1000*2;
+set: const integer BLADE_3 = HUB + 1000*3;
+set: const integer BLADE_4 = HUB + 1000*4;
+set: const integer BLADE_5 = HUB + 1000*5;
+
+ 
+# this variable will be assigned the value of the current blade's label 
+set: integer CURR_BLADE; 
+# Variable assigned to adjacent blade's label (for ib or i2b) 
+set: integer NXT_BLADE; 
+#python #beginpreprocess at rotor_aero.mbd.in:312
+
+#python 1 # if DAMP==2: 
+#python 2 # 	print("# Variable assigned to intermediate blade's label (for i2b)"); 
+#python 3 # 	print("set: integer INT_BLADE;") 
+#python #endpreprocess at rotor_aero.mbd.in:316
+
+ 
+# Airframe properties 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:320
+
+#python 1 # print("# * position") 
+#python 2 # #set: const real x_0 = 0.1;  # x, initial condition 
+#python 3 # #set: const real y_0 = 0.;   # y, initial condition 
+#python 4 # ConstMBVar('x_0','real',x_0) 
+#python 5 # ConstMBVar('y_0','real',y_0) 
+#python 6 # print("# * velocity") 
+#python 7 # #set: const real x_d0 = 0.;  # x, initial condition 
+#python 8 # #set: const real y_d = 0.;   # y, initial condition 
+#python 9 # ConstMBVar('xd_0','real',xd_0) 
+#python 10 # ConstMBVar('yd_0','real',yd_0) 
+#python #endpreprocess at rotor_aero.mbd.in:331
+
+# * position
+set: const real x_0 = 0.0;
+set: const real y_0 = 0.0;
+# * velocity
+set: const real xd_0 = 0.0;
+set: const real yd_0 = 0.0;
+ 
+# * inertia 
+set: const real M_AIRFRAME_X= 8026.6; #[kg] 
+set: const real M_AIRFRAME_Y= 3283.6; #[kg] 
+# * constitutive law definition 
+# 		AIRFRAME_X C_x*xdot+K_x*x 
+set: const real Kx = 1240481.8; # [N/m] 
+set: const real Cx = 51078.7; #  [N*s/m] 
+# 		AIRFRAME_Y C_y*ydot+K_y*y 
+set: const real Ky = 1240481.8; # [N/m] 
+set: const real Cy =  25539.3; #  [N*s/m] 
+ 
+# Hub properties 
+# * position 
+set: const real Z_HUB = 2.0; # m, relative to airframe 
+# * interia 
+set: const real M_HUB = 0.; # kg; define 
+set: const real J_HUB_X = 0.; # kg m^2; define 
+set: const real J_HUB_Z = 0.; # kg m^2; define 
+ 
+# Blade properties 
+# * position (w.r.t Hub) 
+set: const real X_BLADE_FLAP_OFFSET = 0.3048; # [m]; define 
+# * orientation (w.r.t blade lead lag hinge) 
+# initialize the reference orientation and anguñar velocity of the blades 
+set: real XI_0; 
+set: real XID_0; 
+# ------------ NOVEL BLADE MODEL --------------- 
+#	X_BLADE_FLAP_OFFSET 
+#  <------------> 
+# 
+#	c_bar	c 
+#  <-----|------> 
+#  	   d 
+#	  <--> 
+#				o							^ 
+#	   o		|	___________________		|	a 
+#		\		|	|					\	| 
+#  o-----o======o---|					|	- 
+#		/		|	|					|	| 
+#	   o		|	--------------------	|	b 
+#				0							v 
+#	  <--> 
+#	   f 
+# 
+#python #beginpreprocess at rotor_aero.mbd.in:377
+
+#python 1 # if DAMP!=0: 
+#python 2 # 	print("# Front chordwise bar") 
+#python 3 # 	print("set: ifndef const real A_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define") 
+#python 4 # 	print("# Rear chordwise bar") 
+#python 5 # 	print("set: ifndef const real B_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define") 
+#python 6 # 	print("# Cylindrical damper position") 
+#python 7 # 	print("set: ifndef const real C_BAR = X_BLADE_FLAP_OFFSET/4;	# [m]; define") 
+#python 8 # 	print("set: ifndef const real C_BARA = X_BLADE_FLAP_OFFSET/4;					# [m]; define") 
+#python 9 # 	print("set: ifndef const real C_BARB = C_BARA;					# [m]; define") 
+#python 10 #  
+#python #endpreprocess at rotor_aero.mbd.in:388
+
+# Front chordwise bar
+set: ifndef const real A_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define
+# Rear chordwise bar
+set: ifndef const real B_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define
+# Cylindrical damper position
+set: ifndef const real C_BAR = X_BLADE_FLAP_OFFSET/4;	# [m]; define
+set: ifndef const real C_BARA = X_BLADE_FLAP_OFFSET/4;					# [m]; define
+set: ifndef const real C_BARB = C_BARA;					# [m]; define
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:390
+
+#python 1 # if DAMP ==1: 
+#python 2 # 	print("set: real GAMMA_A = atan(A_BAR/C_BARA);") 
+#python 3 # 	print("set: real GAMMA_B = atan(B_BAR/C_BARB);") 
+#python 4 # 	print("set: real A_BARP = sqrt(A_BAR^2+C_BARA^2);") 
+#python 5 # 	print("set: real B_BARP = sqrt(B_BAR^2+C_BARB^2);") 
+#python 6 # 	print("set: real PHI = (pi-DPSI)/2;") 
+#python 7 # 	print("set: real ALPHA2 = PHI+GAMMA_A;") 
+#python 8 # 	print("set: real BETA = PHI+GAMMA_B;") 
+#python 9 # 	print("set: real LE = X_BLADE_FLAP_OFFSET*sin(DPSI)/sin(PHI);") 
+#python 10 # 	print("set: real D1 = (B_BARP*sin(BETA)-A_BARP*sin(ALPHA2))^2;") 
+#python 11 # 	print("set: real D2 = (LE+B_BARP*cos(BETA)+A_BARP*cos(ALPHA2))^2;") 
+#python 12 # 	print("set: real L = sqrt(D1 + D2);") 
+#python 13 # elif DAMP==2: 
+#python 14 # 	print("set: const integer D_NOD = 80 ;")  
+#python 15 # 	print("set: const integer BD_ROD = 85 ;") 
+#python 16 # 	print("set: const integer BD_LINK = 82;") 
+#python 17 # 	print("set: ifndef const real D_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define") 
+#python 18 # 	 
+#python 19 # 	print("set: const integer F_NOD = 90 ;") 
+#python 20 # 	print("set: const integer AF_ROD = 95 ;") 
+#python 21 # 	print("set: const integer AF_LINK = 92;") 
+#python 22 # 	print("set: ifndef const real F_BAR = X_BLADE_FLAP_OFFSET/2;	# [m]; define")  
+#python 23 #  
+#python 24 # 	print("set: real X_AF = ( X_BLADE_FLAP_OFFSET-C_BAR-F_BAR)*cos(DPSI)-(X_BLADE_FLAP_OFFSET+C_BARA);") 
+#python 25 # 	print("set: real Y_AF = ( X_BLADE_FLAP_OFFSET-C_BAR-F_BAR)*sin(DPSI)-(A_BAR);") 
+#python 26 # 	print("set: real Z_AF = 0.;") 
+#python 27 #  
+#python 28 # 	print("set: real X_BD = ( X_BLADE_FLAP_OFFSET-C_BAR-D_BAR)*cos(DPSI)-(X_BLADE_FLAP_OFFSET+C_BARB);") 
+#python 29 # 	print("set: real Y_BD = -( X_BLADE_FLAP_OFFSET-C_BAR-D_BAR)*sin(DPSI)+(B_BAR);") 
+#python 30 # 	print("set: real Z_BD = 0.;") 
+#python #endpreprocess at rotor_aero.mbd.in:421
+
+set: real GAMMA_A = atan(A_BAR/C_BARA);
+set: real GAMMA_B = atan(B_BAR/C_BARB);
+set: real A_BARP = sqrt(A_BAR^2+C_BARA^2);
+set: real B_BARP = sqrt(B_BAR^2+C_BARB^2);
+set: real PHI = (pi-DPSI)/2;
+set: real ALPHA2 = PHI+GAMMA_A;
+set: real BETA = PHI+GAMMA_B;
+set: real LE = X_BLADE_FLAP_OFFSET*sin(DPSI)/sin(PHI);
+set: real D1 = (B_BARP*sin(BETA)-A_BARP*sin(ALPHA2))^2;
+set: real D2 = (LE+B_BARP*cos(BETA)+A_BARP*cos(ALPHA2))^2;
+set: real L = sqrt(D1 + D2);
+ 
+# * inertia properties 
+set: const real M_BLADE = 94.9; # [kg]; define 
+set: const real S_BLADE_Z = 289.1; # [kg m]; define 
+set: const real X_BLADE_CM_REL = S_BLADE_Z/M_BLADE; # [m]; define 
+set: const real X_BLADE_CM = X_BLADE_CM_REL + X_BLADE_FLAP_OFFSET; # [m]; define 
+set: const real J_BLADE_CM_X = 0.; # [kg m^2]; define 1084.7 [kg m^2] 
+set: const real J_BLADE_CM_Y = 0.; # [kg m^2]; define 
+set: const real J_BLADE_Z = 1084.7; # [kg m^2] 
+set: const real J_BLADE_CM_Z = J_BLADE_Z - S_BLADE_Z*X_BLADE_CM_REL; # [kg m^2]; 
+ 
+# * equivalent (visco)elastic properties of elastomeric hinge 
+set: const integer CL_BLADE_ROOT_FRIC = 97; 
+set: const integer CL_BLADE_ROOT_OK = 98; 
+set: const integer CL_BLADE_ROOT_FAILED = 99; 
+set: integer CURR_CL_BLADE_ROOT; 
+set: const real K_BLADE_ROOT_X = 0.; 
+set: const real K_BLADE_ROOT_Y = 0.; 
+set: const real K_BLADE_ROOT_Z = 0.; 
+# Factor for the equivalence between std, ib and i2b damping ratios 
+set: real FACT; 
+set: real C_BLADE_ROOT_Z; 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:445
+
+#python 1 # C_Mz = 4067.5 
+#python 2 # if DAMP ==1: 
+#python 3 # 	print("set: FACT = (2*(1-cos(DPSI)))^(-1);") 
+#python 4 # 	print("set: C_BLADE_ROOT_Z = 4067.5;") 
+#python 5 # 	print("set: ifndef const real GEOMIB = 0.0778^2;") 
+#python 6 # 	print("set: const real C_D = C_BLADE_ROOT_Z*FACT/GEOMIB;") 
+#python 7 # 	print("set: const real C_BLADE_ROOT_X = 0. ;") 
+#python 8 # 	print("set: const real C_BLADE_ROOT_Y = 0. ;") 
+#python 9 # 	 
+#python 10 # elif DAMP==0: 
+#python 11 # 	print("set: FACT = 1;") 
+#python 12 # 	print("set: const real C_BLADE_ROOT_X = 0.;") 
+#python 13 # 	print("set: const real C_BLADE_ROOT_Y = 0.;") 
+#python 14 # 	print("set: C_BLADE_ROOT_Z = 4067.5*FACT;") 
+#python 15 # elif DAMP==2: 
+#python 16 # 	print("set: const real C_BLADE_ROOT_X = 0.;") 
+#python 17 # 	print("set: const real C_BLADE_ROOT_Y = 0.;") 
+#python 18 # 	print("set: FACT = (2*(1-cos(2*DPSI)))^(-1);") 
+#python 19 # 	print("set: ifndef const real GEOM = 9^2/10^2;") 
+#python 20 # 	if N_B==4: 
+#python 21 # 		print("set: C_BLADE_ROOT_Z =  4067.5*FACT/GEOM;") 
+#python 22 # 	elif N_B==5: 
+#python 23 # 		print("set: C_BLADE_ROOT_Z = 4067.5*FACT/GEOM;") 
+#python #endpreprocess at rotor_aero.mbd.in:469
+
+set: FACT = (2*(1-cos(DPSI)))^(-1);
+set: C_BLADE_ROOT_Z = 4067.5;
+set: ifndef const real GEOMIB = 0.0778^2;
+set: const real C_D = C_BLADE_ROOT_Z*FACT/GEOMIB;
+set: const real C_BLADE_ROOT_X = 0. ;
+set: const real C_BLADE_ROOT_Y = 0. ;
+# More sophisticated definition of the damping values 
+/* 
+set: const real LEAD_LAG_CSI = 0.3; 
+set: const real LEAD_LAG_OMEGA = sqrt(3./2*X_BLADE_FLAP_OFFSET/R)*OMEGA_100; 
+set: const real LEAD_LAG_DAMPER_C = 2*LEAD_LAG_CSI*LEAD_LAG_OMEGA*(J_BLADE_CM_Z + M_BLADE*X_BLADE_CM^2); 
+*/ 
+#python #beginpreprocess at rotor_aero.mbd.in:476
+
+#python 1 # if FRICTION ==1: 
+#python 2 # 	print("# NL viscous damper") 
+#python 3 # 	print("# K_xi linear stiffness") 
+#python 4 # 	print("set: ifndef const real K_XI = 0.;	# Linear stiffness") 
+#python 5 # 	print("# Define the N.L viscous law parameters F_d = f*tanh(alpha*epsprime)") 
+#python 6 # 	print("set: ifndef const real ALPHA = 10.;			# Angular velocity multiplier") 
+#python 7 # 	print("# By means of an equivalent viscous damping f is obtained to Match Hammond's C_xi = 4067.5") 
+#python 8 # 	print("set: ifndef const real fd = 4067.5;			# Angular velocity multiplier") 
+#python 9 # 	if DAMP == 0: 
+#python 10 # 		print("set: const real ALPHA_STAR = ALPHA;") 
+#python 11 # 		print("set: const real f_star = fd*FACT*(ALPHA)^(-1.);				# Corrected damping factor by Deutsch criterion") 
+#python 12 # 	elif DAMP ==1: 
+#python 13 # 		print("set: const real ALPHA_STAR = ALPHA/sqrt(GEOMIB);") 
+#python 14 # 		print("set: const real f_star = fd*FACT*(ALPHA*sqrt(GEOMIB))^(-1.);				# Corrected damping factor by Deutsch criterion") 
+#python 15 #  
+#python 16 # 	elif DAMP ==2: 
+#python 17 # 		print("set: const real ALPHA_STAR = ALPHA/sqrt(GEOM);") 
+#python 18 # 		print("set: const real f_star = fd*FACT*(ALPHA*sqrt(GEOM))^(-1.);				# Corrected damping factor by Deutsch criterion") 
+#python 19 #  
+#python 20 #  
+#python 21 #  
+#python 22 #  
+#python 23 # 	print("# Scalar functions") 
+#python 24 # 	print("#scalar function: \"alpha\",const,ALPHA_STAR;") 
+#python 25 # 	print("scalar function: \"f\",const,f_star;") 
+#python 26 # 	print("scalar function: \"exp_p\",exp, coefficient, ALPHA_STAR,1.; # e**(alpha*x)") 
+#python 27 # 	print("scalar function: \"exp_m\",exp, coefficient, -1*ALPHA_STAR,1.; # e**(-alpha*x)") 
+#python 28 # 	print("scalar function: \"num\",sub,\"exp_p\",\"exp_m\";# e**x-e**-x") 
+#python 29 # 	print("scalar function: \"den\",sum,\"exp_p\",\"exp_m\";# e**x+e**-x") 
+#python 30 # 	print("scalar function: \"tanh\",div,\"num\",\"den\";# tanh= (e**x-e**-x) / (e**x+e**-x)") 
+#python 31 # 	print("scalar function: \"nlvisc\",mul,\"f\",\"tanh\";") 
+#python 32 # 	if DAMP ==1: 
+#python 33 # 		print("scalar function: \"L0\",const,L;") 
+#python 34 # 		print("scalar function: \"nlvisc_rod\",mul,\"L0\",\"nlvisc\";") 
+#python 35 #  
+#python 36 #  
+#python 37 # 	print("# Friction damper constitutive law") 
+#python 38 # 	print("constitutive law: CL_BLADE_ROOT_FRIC,3,nlsf viscoelastic,diag,0.,0.,K_XI,null,null,null,null,null,null,\"nlvisc\";") 
+#python #endpreprocess at rotor_aero.mbd.in:515
+
+# NL viscous damper
+# K_xi linear stiffness
+set: ifndef const real K_XI = 0.;	# Linear stiffness
+# Define the N.L viscous law parameters F_d = f*tanh(alpha*epsprime)
+set: ifndef const real ALPHA = 10.;			# Angular velocity multiplier
+# By means of an equivalent viscous damping f is obtained to Match Hammond's C_xi = 4067.5
+set: ifndef const real fd = 4067.5;			# Angular velocity multiplier
+set: const real ALPHA_STAR = ALPHA/sqrt(GEOMIB);
+set: const real f_star = fd*FACT*(ALPHA*sqrt(GEOMIB))^(-1.);				# Corrected damping factor by Deutsch criterion
+# Scalar functions
+#scalar function: "alpha",const,ALPHA_STAR;
+scalar function: "f",const,f_star;
+scalar function: "exp_p",exp, coefficient, ALPHA_STAR,1.; # e**(alpha*x)
+scalar function: "exp_m",exp, coefficient, -1*ALPHA_STAR,1.; # e**(-alpha*x)
+scalar function: "num",sub,"exp_p","exp_m";# e**x-e**-x
+scalar function: "den",sum,"exp_p","exp_m";# e**x+e**-x
+scalar function: "tanh",div,"num","den";# tanh= (e**x-e**-x) / (e**x+e**-x)
+scalar function: "nlvisc",mul,"f","tanh";
+scalar function: "L0",const,L;
+scalar function: "nlvisc_rod",mul,"L0","nlvisc";
+# Friction damper constitutive law
+constitutive law: CL_BLADE_ROOT_FRIC,3,nlsf viscoelastic,diag,0.,0.,K_XI,null,null,null,null,null,null,"nlvisc";
+# Operative damper constitutive law 
+constitutive law: CL_BLADE_ROOT_OK, 3, 
+		linear viscoelastic generic, 
+			diag, K_BLADE_ROOT_X, K_BLADE_ROOT_Y, K_BLADE_ROOT_Z, 
+			diag, C_BLADE_ROOT_X, C_BLADE_ROOT_Y, C_BLADE_ROOT_Z; 
+# Inoperative damper constitutive law 
+constitutive law: CL_BLADE_ROOT_FAILED, 3, 
+		linear viscoelastic generic, 
+			diag, K_BLADE_ROOT_X, K_BLADE_ROOT_Y, K_BLADE_ROOT_Z, 
+			diag, C_BLADE_ROOT_X, C_BLADE_ROOT_Y, 0.; # failed damper 
+ 
+# Aerodynamic data 
+#set: const integer NACA0012 = 12; # label of aerodynamic data 
+#c81 data: NACA0012, "naca0012.c81"; # aerodynamic data (the file "naca0012.c81" is in MBDyn's var/ folder 
+### aero 
+ 
+ 
+# Reference frames definition 
+ 
+reference: GROUND, 
+  reference, global, null,		# position 
+  reference, global, eye,		# orientation 
+  reference, global, null,		# velocity 
+  reference, global, null;		# angular velocity 
+ 
+reference: AIRFRAME_X, 
+  reference , GROUND, 0.,0.,0., 
+  reference, GROUND, eye, 
+  reference, GROUND, null, 
+  reference, GROUND, null; 
+ 
+reference: AIRFRAME_Y, 
+  position, reference , AIRFRAME_X, 0.,0.,0., 
+  orientation, reference, AIRFRAME_X, eye, 
+  velocity, reference, AIRFRAME_X, null, 
+  reference, AIRFRAME_X, null; 
+ 
+reference: HUB, 
+  position, reference , AIRFRAME_Y, 0.,0.,Z_HUB, 
+  orientation, reference, AIRFRAME_Y, eye, 
+  velocity, reference, AIRFRAME_Y, null, 
+  reference, AIRFRAME_Y, 0.,0.,OMEGA_0; 
+ 
+ 
+# Python subscript for automatic reference frame creation in blades 
+#python #beginpreprocess at rotor_aero.mbd.in:561
+
+#python 1 #  
+#python 2 # for b in range(1,N_B+1): 
+#python 3 # 	curr_blade = b 
+#python 4 # 	print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 5 # 	print("# Standard reference frames") 
+#python 6 # 	print("include: \"rotor_blade.ref\";"); 
+#python 7 # 	if DAMP != 0: 
+#python 8 # 		print("# Additional reference frames") 
+#python 9 # 		print("include: \"additional_"+suff+".ref\";"); 
+#python 10 # 	 
+#python #endpreprocess at rotor_aero.mbd.in:572
+
+set: CURR_BLADE = BLADE_1;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_ib.ref";
+set: CURR_BLADE = BLADE_2;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_ib.ref";
+set: CURR_BLADE = BLADE_3;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_ib.ref";
+set: CURR_BLADE = BLADE_4;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_ib.ref";
+set: CURR_BLADE = BLADE_5;
+# Standard reference frames
+include: "rotor_blade.ref";
+# Additional reference frames
+include: "additional_ib.ref";
+ 
+# create nodes, joints etc. 
+begin: nodes; 
+	# Symbolic ground node 
+	structural: GROUND, static, 
+		reference, GROUND, null, 
+		reference, GROUND, eye, 
+		reference, GROUND, null, 
+		reference, GROUND, null; 
+	# Airframe-x Movement node 
+	structural: AIRFRAME_X, dynamic, 
+		reference, AIRFRAME_X, null, 
+		reference, AIRFRAME_X, eye, 
+		reference, AIRFRAME_X, null, 
+		reference, AIRFRAME_X, null; 
+	# Airframe-y movement node 
+	structural: AIRFRAME_Y, dynamic, 
+		reference, AIRFRAME_Y, null, 
+		reference, AIRFRAME_Y, eye, 
+		reference, AIRFRAME_Y, null, 
+		reference, AIRFRAME_Y, null; 
+	# Massless hub node 
+	structural: HUB, static, 
+		reference, HUB, null, 
+		reference, HUB, eye, 
+		reference, HUB, null, 
+		reference, HUB, null; 
+	# Blade nodes 
+	# Use python subscript for automatic numbering 
+#python #beginpreprocess at rotor_aero.mbd.in:602
+
+#python 1 #  
+#python 2 #  
+#python 3 # for b in range(1,N_B+1): 
+#python 4 # 	curr_blade = b 
+#python 5 # 	nxt_blade = (b+2) % N_B 
+#python 6 # 	if nxt_blade== 0: 
+#python 7 # 		nxt_blade = N_B 
+#python 8 # 	print("set: XI_0 = "+str(xi_0[b-1])+";") 
+#python 9 # 	print("set: XID_0 = "+str(xid_0[b-1])+";") 
+#python 10 # 	print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 11 # 	print("# Structural node of the blade") 
+#python 12 # 	print("	include: \"rotor_blade.nod\";"); 
+#python 13 # 	if DAMP==2: 
+#python 14 # 		print("# Additional nodes for the i2b") 
+#python 15 # 		print("	include: \"additional_"+suff+".nod\";"); 
+#python 16 # #[print(d) for d in nodes] 
+#python #endpreprocess at rotor_aero.mbd.in:619
+
+set: XI_0 = 0.01;
+set: XID_0 = 0.0;
+set: CURR_BLADE = BLADE_1;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+set: XI_0 = -0.004;
+set: XID_0 = 0.0;
+set: CURR_BLADE = BLADE_2;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+set: XI_0 = 0.005;
+set: XID_0 = 0.0;
+set: CURR_BLADE = BLADE_3;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+set: XI_0 = 0.002;
+set: XID_0 = 0.0;
+set: CURR_BLADE = BLADE_4;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+set: XI_0 = 0.0;
+set: XID_0 = 0.0;
+set: CURR_BLADE = BLADE_5;
+# Structural node of the blade
+	include: "rotor_blade.nod";
+end: nodes; 
+ 
+drive caller: IC, string, "Time < T_REV"; 
+ 
+begin: elements; 
+	body: AIRFRAME_X,  
+		AIRFRAME_X,						# Label of node 
+		M_AIRFRAME_X-M_AIRFRAME_Y,		# Mass 
+		reference, AIRFRAME_X, null,	# CM offset 
+		null;							# Inertia tensor 
+	body: AIRFRAME_Y, AIRFRAME_Y, 
+		M_AIRFRAME_Y,					# Mass 
+		reference, AIRFRAME_Y, null,	# CM offset 
+		null;							# Inertia tensor 
+	 
+	# clamp ground 
+	joint: GROUND, clamp, GROUND, node, node; 
+ 
+	# AIRFRAME-GROUND JOINT 
+	# Movement along x direction [0,Ry,Rz,Mx,My,Mz] 
+	joint: AIRFRAME_X, total joint, 
+		GROUND,	# label of node #1 
+			position, reference, GROUND, null, 
+			position orientation, reference, GROUND, eye, 
+			rotation orientation, reference, GROUND, eye, 
+		AIRFRAME_X, 
+			position, reference, AIRFRAME_X, null, 
+			position orientation, reference, AIRFRAME_X, eye, 
+			rotation orientation, reference, AIRFRAME_X, eye, 
+		position constraint,  
+			0,					# X-translation 
+			1,					# Y-translation  
+			1,					# Z-translation 
+			null,				# Imposed relative position 
+		orientation constraint,  
+			1,					# X-rotation  
+			1,					# Y-rotation  
+			1, 					# Z-rotation 
+			null;				# Imposed relative rotation 
+	# initial x-position driver 
+	driven: AIRFRAME_X+10, reference, IC, 
+	joint: AIRFRAME_X+10, total joint, 
+		GROUND,	# label of node #1 
+			position, reference, GROUND, null, 
+			position orientation, reference, GROUND, eye, 
+			rotation orientation, reference, GROUND, eye, 
+		AIRFRAME_X, 
+			position, reference, AIRFRAME_X, null, 
+			position orientation, reference, AIRFRAME_X, eye, 
+			rotation orientation, reference, AIRFRAME_X, eye, 
+		position constraint,  
+			velocity,					# X-translation 
+			0,					# Y-translation  
+			0,					# Z-translation 
+			1., 0., 0., 		# Imposed relative position 
+				#const,xd_0+x_0/T_REV, 
+				#step,T_REV-dt,-x_0/T_REV,xd_0+x_0/T_REV, 
+				step5,T_REV-6*dt,xd_0+x_0/(T_REV-6*dt),T_REV-dt,xd_0, 
+		orientation constraint,  
+			0,					# X-rotation  
+			0,					# Y-rotation  
+			0, 					# Z-rotation 
+			null;				# Imposed relative rotation 
+	# Movement along y direction [Rx,0,Rz,Mx,My,Mz] 
+	joint: AIRFRAME_Y, total joint, 
+		AIRFRAME_X,	# label of node #1 
+			position, reference, AIRFRAME_X, null, 
+			position orientation, reference, AIRFRAME_X, eye, 
+			rotation orientation, reference, AIRFRAME_X, eye, 
+		AIRFRAME_Y, 
+			position, reference, AIRFRAME_Y, null, 
+			position orientation, reference, AIRFRAME_Y, eye, 
+			rotation orientation, reference, AIRFRAME_Y, eye, 
+		position constraint,  
+			1,					# X-translation 
+			0,					# Y-translation  
+			1,					# Z-translation 
+			null,				# Imposed relative position 
+		orientation constraint,  
+			1,					# X-rotation  
+			1,					# Y-rotation  
+			1, 					# Z-rotation 
+			null;				# Imposed relative rotation 
+	# initial y-position driver 
+	driven: AIRFRAME_Y+10, reference, IC, 
+	joint: AIRFRAME_Y+10, total joint, 
+		AIRFRAME_X,	# label of node #1 
+			position, reference, AIRFRAME_X, null, 
+			position orientation, reference, AIRFRAME_X, eye, 
+			rotation orientation, reference, AIRFRAME_X, eye, 
+		AIRFRAME_Y, 
+			position, reference, AIRFRAME_Y, null, 
+			position orientation, reference, AIRFRAME_Y, eye, 
+			rotation orientation, reference, AIRFRAME_Y, eye, 
+		position constraint,  
+			0,					# X-translation 
+			velocity,					# Y-translation  
+			0,					# Z-translation 
+			0., 1., 0.,			# Imposed relative position  
+				#const,yd_0+y_0/T_REV, 
+				#step,T_REV-dt,-y_0/T_REV,yd_0+y_0/T_REV, 
+				step5,T_REV-6*dt,yd_0+y_0/(T_REV-6*dt),T_REV-dt,yd_0, 
+		orientation constraint,  
+			0,					# X-rotation  
+			0,					# Y-rotation  
+			0, 					# Z-rotation 
+			null;				# Imposed relative rotation 
+	# Linear viscoelastic conectors 
+	# 1. Ground to Airframe-x 
+	joint: AIRFRAME_X+1, deformable displacement joint, 
+		GROUND, 
+			null,				# relative offset 
+		AIRFRAME_X, 
+			null,				# relative offset 
+		linear viscoelastic, Kx, Cx;	# Sping-damper ground--airframe-x 
+	# 2. Airframe-x to Airframe-y 
+	joint: AIRFRAME_Y+1, deformable displacement joint, 
+		AIRFRAME_X, 
+			null,				# relative offset 
+		AIRFRAME_Y, 
+			null,				# relative offset 
+		linear viscoelastic, Ky, Cy;	# Sping-damper airframe-x--airframe-y 
+	 
+	# airframe-hub joint 
+	joint: HUB, total joint, 
+		AIRFRAME_Y,	# label of node #1 
+			position, reference, HUB, null, 
+			position orientation, reference, AIRFRAME_Y, eye, 
+			rotation orientation, reference, AIRFRAME_Y, eye, 
+		HUB, 
+			position, reference, HUB, null, 
+			position orientation, reference, HUB, eye, 
+			rotation orientation, reference, HUB, eye, 
+		position constraint,  
+			1,					# X-translation 
+			1,					# Y-translation  
+			1,					# Z-translation 
+			null,				# Imposed relative position 
+		orientation constraint,  
+			1,					# X-rotation  
+			1,					# Y-rotation  
+			angular velocity, 	# Z-rotation 
+				0., 0., 1.,  
+				const, OMEGA_0; 
+	# Hub-blade conections and dampers 
+ 
+#python #beginpreprocess at rotor_aero.mbd.in:766
+
+#python 1 #  
+#python 2 # for b in range(1,N_B+1): 
+#python 3 # 	curr_blade = b 
+#python 4 #  
+#python 5 # 	nxt_blade = (b+adj) % N_B 
+#python 6 # 	if nxt_blade== 0: 
+#python 7 # 		nxt_blade = N_B 
+#python 8 #  
+#python 9 # 	int_blade = (b+adj-1) % N_B 
+#python 10 # 	if int_blade== 0: 
+#python 11 # 		int_blade = N_B 
+#python 12 #  
+#python 13 # 	print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 14 # 	if DAMP==2: 
+#python 15 # 		print("set: INT_BLADE = BLADE_", int_blade, ";",sep=''); 
+#python 16 # 	else: 
+#python 17 # 		print("set: NXT_BLADE = BLADE_", nxt_blade, ";",sep=''); 
+#python 18 # 	 
+#python 19 # 	if FRICTION==1.: 
+#python 20 # 		print("set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_FRIC;",sep=''); 
+#python 21 # 	else: 
+#python 22 # 		print("set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_OK;",sep=''); 
+#python 23 # 	 
+#python 24 # 	print("# Blade body and total joint to hub") 
+#python 25 # 	print("	include: \"rotor_blade.elm\";"); 
+#python 26 # 	print("# Damping mechanism for std and ib, additional elements for i2b") 
+#python 27 # 	if FRICTION==1. and DAMP==1.: 
+#python 28 # 		print("	include: \"additional_"+suff+"_fr.elm\";"); 
+#python 29 # 	else: 
+#python 30 # 		print("	include: \"additional_"+suff+".elm\";"); 
+#python 31 #  
+#python 32 #  
+#python 33 # 	print("set: XI_0 = "+str(xi_0[b-1])+";") 
+#python 34 # 	print("set: XID_0 = "+str(xid_0[b-1])+";") 
+#python 35 # 	print(" include: \"initial_condition.elm\";"); 
+#python 36 # 	#print("	include: \"rotor_blade_aero.elm\";"); 
+#python 37 # if DAMP ==2: 
+#python 38 # 	for b in range(1,N_B+1): 
+#python 39 # 		curr_blade = b 
+#python 40 # 		print("# Damping mechanism for i2b") 
+#python 41 # 		print("set: CURR_BLADE = BLADE_", curr_blade, ";",sep=''); 
+#python 42 # 		print("	include: \"additional_"+suff+"_p2.elm\";"); 
+#python 43 # 	 
+#python 44 # #[print(d) for d in bodies] 
+#python 45 # #[print(d) for d in joints] 
+#python #endpreprocess at rotor_aero.mbd.in:812
+
+set: CURR_BLADE = BLADE_1;
+set: NXT_BLADE = BLADE_2;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_FRIC;
+# Blade body and total joint to hub
+	include: "rotor_blade.elm";
+# Damping mechanism for std and ib, additional elements for i2b
+	include: "additional_ib_fr.elm";
+set: XI_0 = 0.01;
+set: XID_0 = 0.0;
+ include: "initial_condition.elm";
+set: CURR_BLADE = BLADE_2;
+set: NXT_BLADE = BLADE_3;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_FRIC;
+# Blade body and total joint to hub
+	include: "rotor_blade.elm";
+# Damping mechanism for std and ib, additional elements for i2b
+	include: "additional_ib_fr.elm";
+set: XI_0 = -0.004;
+set: XID_0 = 0.0;
+ include: "initial_condition.elm";
+set: CURR_BLADE = BLADE_3;
+set: NXT_BLADE = BLADE_4;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_FRIC;
+# Blade body and total joint to hub
+	include: "rotor_blade.elm";
+# Damping mechanism for std and ib, additional elements for i2b
+	include: "additional_ib_fr.elm";
+set: XI_0 = 0.005;
+set: XID_0 = 0.0;
+ include: "initial_condition.elm";
+set: CURR_BLADE = BLADE_4;
+set: NXT_BLADE = BLADE_5;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_FRIC;
+# Blade body and total joint to hub
+	include: "rotor_blade.elm";
+# Damping mechanism for std and ib, additional elements for i2b
+	include: "additional_ib_fr.elm";
+set: XI_0 = 0.002;
+set: XID_0 = 0.0;
+ include: "initial_condition.elm";
+set: CURR_BLADE = BLADE_5;
+set: NXT_BLADE = BLADE_1;
+set: CURR_CL_BLADE_ROOT = CL_BLADE_ROOT_FRIC;
+# Blade body and total joint to hub
+	include: "rotor_blade.elm";
+# Damping mechanism for std and ib, additional elements for i2b
+	include: "additional_ib_fr.elm";
+set: XI_0 = 0.0;
+set: XID_0 = 0.0;
+ include: "initial_condition.elm";
+ 
+end: elements; 
+
+
+# vim:ft=mbd
+
+

@@ -21,4 +21,4 @@ A Comparative Study of the Impact of Innovative Lead-lag Damping Configurations 
 2. FRICTION
     Verification of the correct implementation of the non-linear CL used in
     Chapter 5: Implementation and analysis of non-linear elastomeric dampers
-try
+
